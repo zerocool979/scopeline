@@ -1,0 +1,31 @@
+# Instalasi: docker compose up -d --build
+# Kata sandi admin awal tercetak di log bila ADMIN_PASSWORD tidak diatur:  docker compose logs app | grep ADMIN
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: scopeline
+      POSTGRES_USER: scopeline
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ganti-kata-sandi-db-ini}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scopeline -d scopeline"]
+      interval: 5s
+      retries: 10
+  app:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql+psycopg://scopeline:${POSTGRES_PASSWORD:-ganti-kata-sandi-db-ini}@db:5432/scopeline
+      SECRET_KEY: ${SECRET_KEY:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-5}
+    volumes: [appdata:/data]
+    ports: ["${BIND_ADDR:-127.0.0.1}:${PORT:-8000}:8000"]
+volumes:
+  pgdata:
+  appdata:

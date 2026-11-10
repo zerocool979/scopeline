@@ -1,0 +1,25 @@
+# Secrets / local environment
+.env
+.env.*.local
+!.env.example
+!.env.vercel.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local data / artifacts
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Node / Vercel
+node_modules/
+.vercel/

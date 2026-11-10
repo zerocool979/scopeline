@@ -1,0 +1,7 @@
+{
+  "name": "scopeline-e2e",
+  "private": true,
+  "description": "Uji end-to-end UI SCOPELINE: menjalankan app.js asli di jsdom terhadap server sungguhan",
+  "scripts": { "test": "bash run.sh" },
+  "devDependencies": { "jsdom": "^26.0.0" }
+}

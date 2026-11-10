@@ -1,0 +1,6 @@
+line-length = 120
+[lint]
+select = ["E", "F", "W", "I", "B", "S"]
+ignore = ["B008", "B904", "S603"]  # idiom Depends()/File() pada FastAPI
+[lint.per-file-ignores]
+"tests/*" = ["E402", "S101", "S105", "S106", "E501", "E731"]
