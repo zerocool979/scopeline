@@ -4,9 +4,10 @@ Tanggal pemeriksaan: 10 November 2026
 
 ## GitHub
 
-- Target repository: `https://github.com/zerocool979/scopeline`
-- Status: repository belum dibuat dan belum ada remote Git yang terhubung.
-- Source baseline: SCOPELINE 1.1.0 + konfigurasi Vercel pada root project.
+- Repository: `https://github.com/zerocool979/scopeline`
+- Status: **terhubung ke project Vercel** melalui Git integration.
+- Branch Production: `main`
+- Baseline commit: `6d0cc1236a1c78b4c121cb03e82a7bab09c251cf` (`chore: initial SCOPELINE v1.1`)
 
 ## Vercel
 
@@ -14,36 +15,60 @@ Tanggal pemeriksaan: 10 November 2026
 - Project ID: `prj_2klzYjPraT5VYpIpBcZmS4XR49B7`
 - Framework: FastAPI
 - Team: `zerocool979's projects` (Hobby)
-- Region function: belum ditetapkan atau terverifikasi melalui project settings; jangan diasumsikan `sin1`.
-- Alias otomatis: `scopeline-six.vercel.app` (domain terverifikasi pada project, tetapi belum ada deployment)
-- Project status: `live=false`, `latestDeployment=null`
-- Deployment history: belum ada deployment untuk project ini.
-- SSO protection: aktif untuk seluruh deployment URL non-custom-domain.
+- Git repository: `zerocool979/scopeline`
+- Function region pada deployment pertama: `sin1` (Singapore)
+- Deployment pertama: `dpl_Gnq2nZoYJkRqEvqiwqNRMW6AwgH6`
+- Deployment URL: `https://scopeline-7kp8wr739-zerocool979s-projects.vercel.app`
+- Deployment target: Production; build state: **READY**
+- Alias project: `scopeline-six.vercel.app`
+- SSO protection: Preview saja; Production disiapkan agar dapat diakses melalui autentikasi aplikasi SCOPELINE.
 
-## Environment variables yang sudah dipasang
+**Catatan:** Status READY hanya membuktikan build dan provisioning deployment selesai. Belum membuktikan function dapat menjalankan aplikasi karena PostgreSQL production belum terhubung.
 
-| Key | Nilai/non-secret | Environment |
-|---|---|---|
-| `DATA_DIR` | `/tmp/scopeline` | Production, Preview, Development |
-| `EVIDENCE_IN_DB` | `1` | Production, Preview, Development |
-| `ENABLE_PDF` | `0` | Production, Preview, Development |
-| `MAX_UPLOAD_MB` | `4` | Production, Preview, Development |
-| `ENABLE_DOCS` | `0` | Production, Preview, Development |
+## Environment variables
 
-## Environment variables yang belum tersedia
+### Sudah tersedia pada Production, Preview, dan Development
 
-- `DATABASE_URL` — PostgreSQL persisten khusus SCOPELINE.
-- `SECRET_KEY` — secret minimal 32 karakter.
-- `ADMIN_PASSWORD` — password awal admin minimal 12 karakter.
+| Key | Nilai/non-secret |
+|---|---|
+| `DATA_DIR` | `/tmp/scopeline` |
+| `EVIDENCE_IN_DB` | `1` |
+| `ENABLE_PDF` | `0` |
+| `MAX_UPLOAD_MB` | `4` |
+| `ENABLE_DOCS` | `0` |
+| `SECRET_KEY` | Ada; nilai disimpan sebagai sensitive |
+| `ADMIN_PASSWORD` | Ada; nilai disimpan sebagai sensitive |
 
-Project belum memiliki koneksi database Marketplace. Vercel tidak menyediakan lagi Vercel Postgres native; PostgreSQL baru dipasang melalui provider Vercel Marketplace. Tanpa ketiga variabel wajib, aplikasi menolak start.
+`ADMIN_USERNAME` memakai nilai default `admin`.
+
+### Belum tersedia
+
+- `DATABASE_URL` — koneksi PostgreSQL persisten khusus SCOPELINE.
+
+## Database Marketplace
+
+- Integrasi Neon sudah terpasang pada team Vercel.
+- Daftar project yang terhubung ke resource Neon masih kosong.
+- Belum ada resource PostgreSQL yang dikaitkan ke project SCOPELINE.
+- Karena `backend/app/config.py` mewajibkan `DATABASE_URL` di Vercel, aplikasi menolak startup hingga koneksi PostgreSQL valid tersedia.
+
+Provisioning resource Neon harus diselesaikan melalui Vercel Marketplace Dashboard. Setelah database dibuat dan terhubung ke project, verifikasi bahwa `DATABASE_URL` tersedia di Production, Preview, dan Development sesuai kebutuhan.
 
 ## Domain
 
-- `scopeline.vercel.app`: penambahan ke project `scopeline` ditolak Vercel dengan `owned-on-other-team`.
+- `scopeline.vercel.app`: penambahan ke project ditolak Vercel dengan `owned-on-other-team`.
 - `scopelline.vercel.app`: pemeriksaan ketersediaan mengembalikan `available=false`.
-- Alias fallback `scopeline-six.vercel.app` tersedia pada project, tetapi belum memiliki deployment dan masih mengikuti proteksi SSO project.
+- Alias fallback project: `scopeline-six.vercel.app`.
 
-## Kesimpulan status
+## Status dan langkah berikutnya
 
-Source code dan konfigurasi Vercel telah disiapkan. Repository GitHub belum dibuat; database PostgreSQL belum diprovisikan; tiga variabel rahasia/connection belum dipasang; dan belum ada deployment yang dapat diuji. Karena itu aplikasi belum boleh dinyatakan live/production-ready.
+1. **Selesai:** repository GitHub terhubung ke project Vercel.
+2. **Selesai:** build deployment pertama berhasil dan state deployment `READY`.
+3. **Selesai:** `SECRET_KEY` dan `ADMIN_PASSWORD` disimpan sebagai sensitive environment variables.
+4. **Belum selesai:** provision PostgreSQL melalui Vercel Marketplace Neon dan hubungkan ke project SCOPELINE.
+5. **Belum selesai:** redeploy setelah `DATABASE_URL` tersedia.
+6. **Belum selesai:** verifikasi `/api/health`, login admin, engagement, finding, evidence, review, retest, dan ekspor DOCX.
+
+SCOPELINE **belum boleh dinyatakan live/production-ready** sebelum database terhubung, runtime health check berhasil, dan alur inti lulus pengujian.
+
+PDF export tetap nonaktif pada Vercel (`ENABLE_PDF=0`); ekspor DOCX adalah jalur yang disiapkan untuk deployment ini.
