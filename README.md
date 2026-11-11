@@ -7,6 +7,7 @@ Platform manajemen engagement dan pelaporan penetration testing berbasis web (ST
 ## Dokumen acuan
 
 - [Baseline realitas proyek berdasarkan source code](docs/PROJECT-REALITY-BASELINE.md) — definisi produk, alur bisnis, model data, role, keamanan, batas lingkungan, bukti CI, dan ketidaksesuaian versi lama.
+- [Tindak lanjut 12 komentar Bilal](docs/REVISI-KOMENTAR-BILAL.md) — keputusan revisi, rumusan FR/NFR, dan gap yang masih memerlukan persetujuan atau perubahan kode.
 - [Status implementasi dan deployment](docs/DEPLOYMENT-STATUS.md) — commit, CI, Vercel, konfigurasi environment tanpa nilai rahasia, dan checklist runtime.
 - [Matriks peran dan izin](docs/PERAN-DAN-IZIN.md).
 - [Pemeriksaan mandiri OWASP ASVS Level 1](docs/ASVS-L1-checklist.md).
