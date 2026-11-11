@@ -181,7 +181,7 @@ def test_templates_and_cvss_endpoint(client, tokens):
     assert client.post("/api/cvss/calc", headers=tokens["tester"], json={"vector": VEC}).json()["score"] == 9.9
     assert client.post("/api/cvss/calc", headers=tokens["tester"], json={"vector": "x"}).status_code == 422
     body = {"title": "Header keamanan hilang", "description": "d", "impact": "i", "recommendation": "r",
-            "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N"}
+            "cvss_vector": VEC}
     assert client.post("/api/finding-templates", headers=tokens["tester"], json=body).status_code == 403
     r = client.post("/api/finding-templates", headers=tokens["lead"], json=body)
     assert r.status_code == 201
