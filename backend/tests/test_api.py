@@ -6,6 +6,7 @@ import pytest
 from conftest import PW, VEC, login
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
+VEC = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:N"
 FIND = {"title": "SQL Injection pada /login", "description": "Parameter user", "impact": "Data bocor",
         "recommendation": "Gunakan parameterized query", "cvss_vector": VEC}
 
@@ -109,14 +110,16 @@ def test_findings_lifecycle(client, tokens, eng):
     t = tokens["tester"]
     assert client.post(f"/api/engagements/{eng}/findings", headers=tokens["reviewer"], json=FIND).status_code == 403
     assert client.post(f"/api/engagements/{eng}/findings", headers=tokens["tester2"], json=FIND).status_code == 404
-    bad = dict(FIND, cvss_vector="CVSS:3.1/AV:Z")
+    bad = dict(FIND, cvss_vector="CVSS:4.0/AV:Z")
     assert client.post(f"/api/engagements/{eng}/findings", headers=t, json=bad).status_code == 422
     r = client.post(f"/api/engagements/{eng}/findings", headers=t, json=dict(FIND, cvss_score=0.1))
     assert r.status_code == 201
     f = r.json()
-    assert f["cvss_score"] == 9.8 and f["severity"] == "critical" and f["code"].startswith("F-")
-    r = client.patch(f"/api/findings/{f['id']}", headers=t, json={"cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N"})
-    assert r.json()["cvss_score"] == 5.4 and r.json()["severity"] == "medium"
+    assert f["cvss_score"] == 9.9 and f["severity"] == "critical" and f["cvss_version"] == "4.0"
+    assert f["code"].startswith("F-")
+    assert f["cvss_vector"].startswith("CVSS:4.0/")
+    r = client.patch(f"/api/findings/{f['id']}", headers=t, json={"cvss_vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:A/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"})
+    assert r.json()["cvss_version"] == "4.0" and r.json()["severity"] == "medium"
     r = client.post(f"/api/findings/{f['id']}/status", headers=t, json={"status": "fixed", "notes": "patch v2"})
     assert r.json()["status"] == "fixed"
     # "lulus retest" tidak dapat diset manual, hanya lewat ronde retest
@@ -264,3 +267,31 @@ def test_evidence_stored_in_database_and_pdf_toggle(client, tokens, eng, monkeyp
     assert client.get(f"/api/engagements/{eng}/report?format=docx", headers=t).status_code == 200
     monkeypatch.setattr(settings, "enable_pdf", False)
     assert client.get(f"/api/engagements/{eng}/report?format=pdf", headers=t).status_code == 503
+
+
+
+def test_legacy_cvss_history_survives_v4_reassessment(client, tokens, eng):
+    from app.database import SessionLocal
+    from app.models import Finding
+
+    with SessionLocal() as db:
+        old = Finding(
+            engagement_id=eng, number=900, title="Legacy finding", description="old",
+            impact="old impact", recommendation="old recommendation",
+            cvss_vector="CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+            cvss_version="3.1", cvss_score=9.8, severity="critical",
+            status="open", retest_notes="", review_status="draft", review_note="",
+            created_by_id=None,
+        )
+        db.add(old)
+        db.commit()
+        fid = old.id
+
+    r = client.patch(f"/api/findings/{fid}", headers=tokens["tester"], json={"cvss_vector": VEC})
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["cvss_version"] == "4.0"
+    assert out["cvss_legacy_version"] == "3.1"
+    assert out["cvss_legacy_score"] == 9.8
+    assert out["cvss_legacy_vector"].startswith("CVSS:3.1/")
+    assert out["cvss_score"] == 9.9
