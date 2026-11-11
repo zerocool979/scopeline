@@ -4,6 +4,27 @@
 
 **Acuan perilaku:** source code branch `main`, baseline commit `f49736200295fc33e63030d178dfb85e35bbd25c` (11 November 2026), terutama `backend/app/models.py`, `backend/app/routers/`, `backend/app/cvss.py`, test suite, serta dokumen `PROJECT-REALITY-BASELINE.md`. Source code adalah acuan untuk klaim *as-built*; komentar Bilal adalah masukan kebutuhan/arah revisi.
 
+## Keputusan final baseline dokumentasi
+
+Keputusan kerja untuk penyelarasan dokumen akademik ditetapkan sebagai berikut:
+
+1. **Lima jabatan organisasi dipetakan ke lima role aplikasi** tanpa mengubah kode role dan izin backend:
+   - Admin System → Admin (`admin`)
+   - Project Management → Lead (`lead`)
+   - Engineer-Head Offensive Security → Peninjau / Reviewer (`reviewer`)
+   - Engineer-Lead of Technical Writer → Technical Writer (`writer`)
+   - Engineer-Red Team → Penguji / Tester (`tester`)
+
+   Pemetaan ini adalah keputusan nomenklatur proyek untuk dokumen, bukan klaim bahwa setiap jabatan memiliki kewenangan identik di luar matriks aplikasi. Secara khusus, Reviewer tidak otomatis memiliki hak mengelola engagement, anggota, scope, atau RoE seperti Lead. Bila Head Offensive Security memerlukan kewenangan tersebut, perubahan RBAC harus dibuat terpisah dan diuji; pemetaan nama saja tidak memberikan izin tambahan.
+
+2. **CVSS v3.1 dipertahankan untuk versi implementasi saat ini.** Ini dipilih bukan karena v3.1 lebih baru, melainkan karena source code, format vektor, kalkulasi, severity, endpoint, test, dan data temuan yang berjalan semuanya menggunakan CVSS v3.1. CVSS v4.0 dicatat sebagai target peningkatan versi berikutnya; tidak boleh disebut sudah diterapkan sebelum kalkulator dan seluruh integrasi dimigrasikan serta diuji.
+
+3. **Mode perhitungan skor yang berlaku adalah kalkulasi sistem/server dari vektor CVSS.** Input skor numerik manual belum menjadi fitur aktif. Jika kebutuhan manual dimaksudkan sebagai pemilihan metrik vektor secara manual di UI, hal tersebut tetap dapat mempertahankan kalkulasi server-side; jika dimaksudkan sebagai input skor akhir, perlu kontrol audit dan validasi tersendiri.
+
+4. **FR-08 ditetapkan Must pada baseline kebutuhan** dengan kriteria akses berbasis role dan engagement. Data dasbor harus mengikuti hak akses, bukan sekadar menyembunyikan elemen antarmuka.
+
+5. **SAWALA bukan dataset default.** Penggunaannya memerlukan izin dan sanitasi; data sintetis tetap menjadi dataset demonstrasi sampai izin tersebut tersedia.
+
 ## Keputusan per komentar
 
 | No. | Topik | Keputusan revisi dokumentasi | Status terhadap implementasi |
@@ -12,7 +33,7 @@
 | 2 | Fase berikutnya / kontrak API | Pisahkan demo lokal dari target deployment. REST API FastAPI tetap menjadi kontrak backend; target Vercel bukan lagi sekadar fase berikutnya karena deployment Production berstatus READY. Namun runtime acceptance tetap perlu pengujian langsung. | Deployment metadata READY; runtime acceptance belum dibuktikan |
 | 3 | Data uji fiktif atau SAWALA | Pertahankan data sintetis sebagai default. Dataset UAS SAWALA hanya boleh dipakai setelah ada izin pemilik data/dosen, penghapusan identitas dan rahasia, serta konfirmasi bahwa scope dan bukti boleh digunakan. SCOPELINE tidak boleh dipakai untuk menguji target tanpa otorisasi tertulis. | Keputusan tata kelola; belum ada bukti dataset SAWALA disetujui/diintegrasikan |
 | 4 | Versi CVSS | Dokumen *as-built* menyebut CVSS v3.1. Jelaskan bahwa v3.1 dipilih untuk baseline ini karena parser, rumus, vektor, test, dan keluaran laporan saat ini memang v3.1. Catat CVSS v4.0 sebagai kandidat peningkatan, bukan klaim implementasi. | Source hanya menerima `CVSS:3.1` |
-| 5 | FR-01 dan FR-08, lima peran | Rinci autentikasi/pengelolaan pengguna dan dasbor per role. Gunakan lima role aplikasi yang benar-benar ada: Admin, Lead, Penguji (tester), Peninjau (reviewer), Technical Writer (writer). Cantumkan nama organisasi Bilal sebagai pemetaan/alias yang perlu persetujuan stakeholder, bukan mengganti kode role secara sepihak. | Lima role dan dasbor ada; kesetaraan nama organisasi perlu keputusan |
+| 5 | FR-01 dan FR-08, lima peran | Rinci autentikasi/pengelolaan pengguna dan dasbor per role. Gunakan pemetaan final nomenklatur proyek: Admin System → Admin; Project Management → Lead; Engineer-Head Offensive Security → Peninjau/Reviewer; Engineer-Lead of Technical Writer → Technical Writer; Engineer-Red Team → Penguji/Tester. Kode role dan izin backend tetap dipertahankan. | Lima role dan dasbor ada; kesetaraan nama organisasi perlu keputusan |
 | 6 | Kalkulator CVSS di tabel FR | Ubah label menjadi “Kalkulator CVSS v3.1 (server-side)” dan nyatakan v4.0 sebagai backlog migrasi bila disetujui. | Sudah sesuai source |
 | 7 | Fungsi khusus perhitungan vektor | Jelaskan kalkulasi dipisahkan dalam modul `backend/app/cvss.py`, divalidasi, lalu dipakai oleh endpoint kalkulasi dan alur create/update finding. Kriteria uji harus menguji vektor valid/tidak valid, skor, severity, dan konsistensi endpoint dengan penyimpanan temuan. | Sudah diimplementasikan |
 | 8 | Tabel NFR | Susun NFR sebagai tabel tersendiri dengan ID, kebutuhan, prioritas, kriteria uji, dan status/bukti. Bedakan kontrol teruji otomatis dari hal yang masih perlu verifikasi manual. | Perlu perapian dokumen kebutuhan; kontrol ada dengan batasan yang dicatat di ASVS checklist |
@@ -33,7 +54,7 @@ Tabel berikut adalah rumusan kebutuhan yang dapat dipakai untuk memperbarui maka
 | FR-08 | Dasbor menyajikan ringkasan sesuai role dan engagement yang dapat diakses pengguna. | Must (usulan prioritas) | Tanpa token 401; role/anggota tidak berhak tidak dapat mengakses data engagement; data yang ditampilkan tidak membocorkan engagement di luar hak akses; verifikasi tampilan per kelima role. | Dasbor dan pembatasan engagement tersedia; matriks acceptance dashboard per role perlu dilengkapi |
 | FR-05 | Kalkulasi Base Score dan severity CVSS v3.1 dari vektor yang tervalidasi. | Must | Vektor tidak lengkap/salah versi ditolak; contoh vektor uji menghasilkan skor dan severity yang diharapkan; endpoint kalkulasi dan create/update finding menghasilkan nilai identik. | Ada; fungsi khusus di `cvss.py` |
 
-**Catatan pemetaan role organisasi:** nama “Admin System”, “Project Management”, “Engineer-Head Offensive Security”, “Engineer-Lead of Technical Writer”, dan “Engineer-Red Team” tidak muncul sebagai kode role pada source. Pemetaan awal yang dapat dibahas dengan stakeholder: Admin System → Admin; Project Management → Lead; Engineer-Red Team → Penguji; Engineer-Lead of Technical Writer → Technical Writer; Engineer-Head Offensive Security → Peninjau *hanya jika* fungsi utamanya quality review. Jika jabatan Head Offensive Security juga harus mengelola engagement, role Reviewer tidak memiliki seluruh izin Lead. Konfirmasi struktur dan kewenangan ini sebelum mengubah FR/RBAC.
+**Catatan pemetaan role organisasi:** nama jabatan organisasi adalah label bisnis, bukan kode role source. Pemetaan dokumen yang dipakai: Admin System → Admin; Project Management → Lead; Engineer-Head Offensive Security → Peninjau; Engineer-Lead of Technical Writer → Technical Writer; Engineer-Red Team → Penguji. Pemetaan ini tidak mengubah izin. Peninjau tidak memiliki hak Lead untuk membuat/mengubah engagement, mengelola anggota, atau menyetujui RoE. Jika kewenangan Head Offensive Security harus mencakup fungsi tersebut, RBAC backend harus direvisi dan diuji sebelum klaim tersebut dicantumkan.
 
 ### Kebutuhan non-fungsional
 
@@ -48,13 +69,13 @@ Tabel berikut adalah rumusan kebutuhan yang dapat dipakai untuk memperbarui maka
 | NFR-07 | Ketersediaan ekspor laporan. | Should | DOCX dapat dibuat dan divalidasi; PDF hanya dinyatakan tersedia bila LibreOffice terpasang. | PDF dinonaktifkan pada runtime Vercel. |
 | NFR-08 | Kemudahan pengembangan lokal. | Should | Docker Compose dapat membangun dan menjalankan stack lokal. | Bukan kriteria deployment produksi Vercel. |
 
-## Keputusan yang memerlukan persetujuan pemilik proyek
+## Keputusan lanjutan yang masih memerlukan perubahan atau bukti
 
-1. **Nama lima role:** setujui apakah nama organisasi Bilal menjadi label resmi di makalah/UI, dan tetapkan matriks izin setiap jabatan. Jangan menyamakan Head Offensive Security dengan Reviewer tanpa konfirmasi.
-2. **CVSS v4.0:** putuskan apakah proyek akan melakukan migrasi implementasi. Sampai kode dan test diubah, v3.1 tetap versi yang benar untuk dokumentasi *as-built*.
-3. **Perhitungan manual:** putuskan apakah kebutuhan manual berarti pengguna boleh memasukkan skor numerik, memilih vektor secara manual lalu sistem menghitung, atau sekadar mengisi kalkulator vektor interaktif. Ketiganya berbeda dari sisi integritas data. Implementasi saat ini menghitung skor di server.
-4. **Dataset SAWALA:** dapatkan izin dan lakukan sanitasi data sebelum memasukkannya ke demo, screenshot, repo, atau laporan.
-5. **Prioritas FR-08 dan NFR:** perubahan prioritas Must perlu dicatat sebagai perubahan baseline ruang lingkup dan diuji terhadap kapasitas/jadwal proyek.
+1. **Hak Engineer-Head Offensive Security:** konfirmasi apakah role Peninjau cukup atau perlu kewenangan tambahan setara Lead. Dokumen saat ini memakai Peninjau dan tidak memperluas izin.
+2. **Migrasi CVSS v4.0:** menjadi pekerjaan peningkatan versi; sampai parser, kalkulator, UI, test, dan laporan dimigrasikan, v3.1 tetap versi aktif.
+3. **Mode hitung manual:** definisikan apakah yang dimaksud input metrik vektor manual atau input skor numerik akhir. Mode aktif saat ini adalah kalkulasi server-side.
+4. **Dataset SAWALA:** dapatkan izin dan lakukan sanitasi sebelum dipakai.
+5. **Penerimaan deployment:** lakukan uji langsung terhadap runtime Vercel dan simpan bukti hasilnya.
 
 ## Batas klaim deployment dan pengujian
 
