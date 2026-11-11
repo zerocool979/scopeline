@@ -3,7 +3,7 @@ import zipfile
 
 import pyotp
 import pytest
-from conftest import PW, VEC, login
+from conftest import PW, login
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
 VEC = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:N"
