@@ -55,6 +55,7 @@ def finding_out(f: Finding, with_evidence: bool = True, blobs: bool = False) -> 
         "id": f.id, "engagement_id": f.engagement_id, "number": f.number, "code": f"F-{f.number:03d}",
         "title": f.title, "description": f.description, "impact": f.impact,
         "recommendation": f.recommendation, "cvss_vector": f.cvss_vector, "cvss_version": f.cvss_version,
+        "cvss_nomenclature": nomenclature(f.cvss_vector) if f.cvss_version == "4.0" else "CVSS v3.1",
         "cvss_score": f.cvss_score, "severity": f.severity,
         "cvss_legacy_vector": f.cvss_legacy_vector, "cvss_legacy_score": f.cvss_legacy_score,
         "cvss_legacy_severity": f.cvss_legacy_severity, "cvss_legacy_version": f.cvss_legacy_version,
