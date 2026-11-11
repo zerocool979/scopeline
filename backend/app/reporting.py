@@ -251,8 +251,9 @@ def _content_retest(doc, eng, findings, period, evidence_dir, hidden, draft):
             continue
         _heading(doc, f"{n}. {BUCKET_LABEL[key]}", 1)
         n += 1
-        _grid(doc, ["ID", "Judul", "Keparahan", "CVSS", "Ronde retest", "Hasil terakhir"],
-              [[f["code"], f["title"], SEV_LABEL[f["severity"]], f["cvss_score"], len(f["retests"]),
+        _grid(doc, ["ID", "Judul", "Keparahan", "CVSS (versi)", "Ronde retest", "Hasil terakhir"],
+              [[f["code"], f["title"], SEV_LABEL[f["severity"]],
+                f"{f['cvss_score']} (v{f.get('cvss_version', '3.1')})", len(f["retests"]),
                 RESULT_LABEL.get(f["retests"][-1]["result"], "-") if f["retests"] else "-"]
                for f in sorted(items, key=lambda x: (-x["cvss_score"], x["number"]))])
     _heading(doc, f"{n}. Rincian Temuan dan Riwayat Retest", 1)
@@ -287,7 +288,7 @@ def build_docx(kind: str, eng: dict, findings: list[dict], *, evidence_dir: Path
             marker._p.addprevious(el)
         marker._p.getparent().remove(marker._p)
 
-    foot = doc.add_paragraph(f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today}")
+    foot = doc.add_paragraph(f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today} | CVSS owned by FIRST and used by permission.")
     foot.runs[0].font.size = Pt(8)
     buf = io.BytesIO()
     doc.save(buf)
