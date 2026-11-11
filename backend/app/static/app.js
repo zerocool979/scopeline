@@ -219,7 +219,7 @@ function cvssEditor(initial, onChange) {
   const m = {}, baseKeys = new Set(CVSS_METRICS.map(([k]) => k));
   (initial || DEFAULT_VECTOR).split('/').slice(1).forEach(p => { const [k, v] = p.split(':'); m[k] = v; });
   let extras = Object.entries(m).filter(([k]) => !baseKeys.has(k));
-  const out = h('span', {class: 'score'}, '–'), sev = h('span', {}), vec = h('code', {});
+  const out = h('span', {class: 'score'}, '–'), sev = h('span', {}), nom = h('span', {class: 'muted'}, 'CVSS-B'), vec = h('code', {});
   const selects = {};
   const vector = () => 'CVSS:4.0/' + CVSS_METRICS.map(([k]) => `${k}:${selects[k].value}`).join('/') + extras.map(([k, v]) => `/${k}:${v}`).join('');
   let seq = 0;
@@ -228,7 +228,7 @@ function cvssEditor(initial, onChange) {
     try {
       const r = await api('/cvss/calc', {method: 'POST', body: {vector: v}});
       if (mine !== seq) return;
-      out.textContent = r.score; sev.replaceChildren(sevBadge(r.severity));
+      out.textContent = r.score; sev.replaceChildren(sevBadge(r.severity)); nom.textContent = r.nomenclature;
     } catch (_) { if (mine === seq) out.textContent = '?'; }
     onChange && onChange(v);
   };
@@ -238,7 +238,7 @@ function cvssEditor(initial, onChange) {
   });
   const root = h('div', {}, h('div', {class: 'row'}, grid),
     extras.length ? h('p', {class: 'muted'}, 'Metrik Threat/Environmental yang sudah ada dipertahankan pada vector; pengeditan metrik opsional dilakukan melalui vector/API.') : null,
-    h('div', {class: 'between'}, h('div', {}, out, ' ', sev), vec));
+    h('div', {class: 'between'}, h('div', {}, out, ' ', sev, ' ', nom), vec));
   const setVector = value => {
     const parsed = {};
     (value || DEFAULT_VECTOR).split('/').slice(1).forEach(p => { const [k, v] = p.split(':'); parsed[k] = v; });
@@ -297,7 +297,7 @@ async function viewFinding(fid, eid) {
       field('Judul', title), field('Deskripsi', desc), field('Dampak', imp), field('Rekomendasi', rec),
       field('Tenggat perbaikan', due),
       f && f.cvss_legacy_vector && h('p', {class: 'muted'}, 'Riwayat ' + f.cvss_legacy_version + ': ' + f.cvss_legacy_score + ' (' + (SEV[f.cvss_legacy_severity] || f.cvss_legacy_severity) + ') — ' + f.cvss_legacy_vector),
-      legacyBlock, h('h2', {}, 'Penilaian CVSS v4.0 (CVSS-B)'), cv.root,
+      legacyBlock, h('h2', {}, 'Penilaian CVSS v4.0'), cv.root,
       textEdit && h('div', {class: 'actions'}, h('button', {id: 'f-save', onclick: act(async () => {
         if (f) { await api('/findings/' + fid, {method: 'PATCH', body: body()}); toast('Temuan disimpan'); reload(); }
         else { const r = await api(`/engagements/${eid}/findings`, {method: 'POST', body: body()}); toast('Temuan dibuat'); location.hash = '#/findings/' + r.id; }
