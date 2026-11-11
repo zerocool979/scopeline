@@ -379,7 +379,7 @@ def list_templates(db: Session = Depends(get_db), _: User = Depends(current_user
 @router.post("/finding-templates", status_code=201)
 def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
     _score(data.cvss_vector)
-    t = FindingTemplate(**data.model_dump(), cvss_vector=normalize_vector(data.cvss_vector), cvss_version="4.0")
+    t = FindingTemplate(**data.model_dump(exclude={"cvss_vector"}), cvss_vector=normalize_vector(data.cvss_vector), cvss_version="4.0")
     db.add(t)
     db.flush()
     audit.log(db, user, "template_created", "template", t.id, t.title)
