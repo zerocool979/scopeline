@@ -1,114 +1,99 @@
 # Status Implementasi dan Deployment SCOPELINE
 
-**Pemeriksaan terakhir:** 11 November 2026  
-**Repository branch:** main  
-**Commit yang diperiksa:** bca1d52479aa7537df025c4a3dc84d2807453705 (merge CVSS v4.0)
+**Pemeriksaan:** 11 November 2026  
+**Repository:** https://github.com/zerocool979/scopeline  
+**Branch produksi:** `main`  
+**Project Vercel:** `scopeline` — terhubung ke `zerocool979/scopeline`  
+**Alias produksi:** https://scopeline-six.vercel.app
 
 ## Ringkasan status
 
-| Area | Status | Dasar bukti |
+| Area | Status | Bukti / batas klaim |
 |---|---|---|
-| Source code | Tersedia | Branch main, merge commit di atas; kalkulator aktif CVSS v4.0 |
-| GitHub Actions CI untuk merge commit | Berjalan saat pemeriksaan | [Run 43034551071](https://github.com/zerocool979/scopeline/actions/runs/43034551071); CI branch PR #9 seluruh job lulus |
-| Vercel Production deployment | READY | Deployment scopeline-gs24s7r06-zerocool979s-projects.vercel.app |
-| Alias produksi | Terpasang | https://scopeline-six.vercel.app |
-| PostgreSQL Production env | Terkonfigurasi | DATABASE_URL terdaftar pada environment Production |
-| Bukti disimpan di database | Terkonfigurasi | EVIDENCE_IN_DB=1 |
-| PDF di Vercel | Dinonaktifkan | ENABLE_PDF=0 |
-| Runtime health & alur aplikasi | Belum diverifikasi dalam pemeriksaan ini | Metadata READY bukan health check; tidak ada log runtime pada jendela 50 menit yang diperiksa |
+| CVSS v4.0 | <badge> merged ke main | PR #9, merge commit `bca1d52479aa7537df025c4a3dc84d2807453705` |
+| CI branch PR #9 | <badge> success | Run [43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984) |
+| CI untuk dokumentasi commit terbaru | Belum diverifikasi | Jangan disimpulkan dari CI PR #9 |
+| Vercel Git integration | Terhubung | Project `scopeline`, repo `zerocool979/scopeline`, branch `main` |
+| Deployment Production terakhir yang sudah READY saat pemeriksaan | READY | Commit `f2bc363779888d88c134c49787c2b74427bcc942`, deployment `dpl_7KXgGKFhkrEBa8QBTXDqD5ZbdnCV` |
+| Commit dokumentasi sesudah deployment READY tersebut | QUEUED/BUILDING saat pemeriksaan | Commit dokumentasi PA/PM dan sinkronisasi komentar; tidak mengubah source aplikasi |
+| Error runtime 24 jam | Tidak ditemukan | Vercel error aggregation mengembalikan no runtime errors |
+| Log runtime detail | Tidak tersedia untuk jendela 24 jam | Retensi log pada paket Hobby lebih pendek; query 24 jam ditolak API |
+| Health check dan acceptance bisnis production | Belum diverifikasi | Deployment READY dan tidak adanya error cluster bukan pengganti uji alur bisnis |
 
-## GitHub
+## GitHub dan perubahan aplikasi
 
 - Repository: https://github.com/zerocool979/scopeline
-- Branch Production: main
-- Commit: bca1d52479aa7537df025c4a3dc84d2807453705
-- Commit message: feat: adopt CVSS v4.0 with v3.1 history
-- CVSS v4.0 migration merged via [PR #9](https://github.com/zerocool979/scopeline/pull/9).
-
-## GitHub Actions
-
-- Workflow: [CI](https://github.com/zerocool979/scopeline/actions)
-- CI branch PR #9: [run 43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984), **completed / success**, termasuk SQLite, PostgreSQL, E2E, security checks, coverage gate, dan Docker Compose build.
-- CI pasca-merge di `main`: [run 43034551071](https://github.com/zerocool979/scopeline/actions/runs/43034551071), **in progress pada pemeriksaan terakhir**. Jangan menganggap hasil pasca-merge lulus sampai run ini selesai.
-
-Workflow pada commit tersebut menjalankan:
-1. Ruff lint.
-2. Bandit static security checks.
-3. pip-audit dependency audit.
-4. Pytest pada SQLite dengan coverage gate --cov-fail-under=70.
-5. Pytest pada PostgreSQL 16 untuk migrasi dan relasi.
-6. E2E UI dengan Node/jsdom dan server aplikasi.
-7. Docker Compose build.
-
-Kesimpulan: gerbang CI pada commit tersebut lulus. Ini bukan pengganti verifikasi manual OWASP ASVS atau uji penerimaan runtime di deployment Production.
+- Branch: `main`.
+- CVSS v4.0 telah digabung melalui [PR #9](https://github.com/zerocool979/scopeline/pull/9).
+- Merge commit: `bca1d52479aa7537df025c4a3dc84d2807453705`.
+- CI branch PR #9: run [43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984), completed/success, mencakup Ruff, Bandit, pip-audit, SQLite tests dengan coverage gate, PostgreSQL tests, E2E UI, dan Docker Compose build.
+- CI PR yang lulus tidak membuktikan semua acceptance test Production telah selesai.
+- Perubahan dokumentasi PA/PM setelah commit aplikasi tidak mengubah source runtime; status CI untuk commit dokumentasi terbaru tetap perlu diperiksa terpisah.
 
 ## Vercel
 
-- Project: scopeline
-- Project ID: prj_2klzYjPraT5VYpIpBcZmS4XR49B7
-- Team: zerocool979s-projects (Hobby)
-- Framework: FastAPI
-- Repository: zerocool979/scopeline
-- Branch: main
-- Commit deployment terakhir yang telah diverifikasi sebelumnya: f49736200295fc33e63030d178dfb85e35bbd25c (deployment pasca-merge belum diverifikasi)
-- Deployment ID: dpl_6bTYboJCq8Xcg3BRrLk3GoZGRn2g
-- Deployment URL: https://scopeline-gs24s7r06-zerocool979s-projects.vercel.app
+Project Vercel terhubung ke GitHub repository dan branch `main`. Pemeriksaan deployment Production terakhir yang sudah berstatus READY:
+
+- Deployment ID: `dpl_7KXgGKFhkrEBa8QBTXDqD5ZbdnCV`
+- Deployment URL: https://scopeline-q6c8toa8g-zerocool979s-projects.vercel.app
 - Alias: https://scopeline-six.vercel.app
-- Target: Production
+- Commit: `f2bc363779888d88c134c49787c2b74427bcc942`
 - State: **READY**
-- Region: sin1 (Singapore)
+- Region: `sin1`
 
-### Environment variables (nama dan status saja)
+Sesudah deployment tersebut, GitHub menerima commit dokumentasi PA/PM dan sinkronisasi keputusan. Vercel membuat deployment Production otomatis untuk commit dokumentasi itu; pada saat pemeriksaan terakhir deployment terbaru berada pada status QUEUED/BUILDING. Karena itu, jangan menyebut commit dokumentasi terbaru sudah ter-deploy sampai status READY dikonfirmasi.
 
-Pemeriksaan metadata environment Vercel menunjukkan variabel berikut ditargetkan ke Production. Nilai rahasia tidak boleh disalin ke repository atau dokumen:
+### Konfigurasi environment
+
+Metadata project menunjukkan konfigurasi Production berikut (hanya nama dan nilai nonrahasia; secret tidak dicantumkan):
 
 | Variabel | Status/konfigurasi |
 |---|---|
-| DATABASE_URL | Ada; disediakan integrasi PostgreSQL |
+| DATABASE_URL | Ada; PostgreSQL persisten |
 | SECRET_KEY | Ada; sensitive |
-| ADMIN_PASSWORD | Ada; sensitive; tidak dicantumkan nilainya |
-| DATA_DIR | /tmp/scopeline |
-| EVIDENCE_IN_DB | 1 |
-| ENABLE_PDF | 0 |
-| MAX_UPLOAD_MB | 4 |
-| ENABLE_DOCS | 0 |
-| ADMIN_PASSWORD_RESET_ONCE | Variabel reset satu kali telah dinonaktifkan setelah rotasi awal dikonfirmasi melalui log |
+| ADMIN_PASSWORD | Ada; sensitive |
+| DATA_DIR | `/tmp/scopeline` |
+| EVIDENCE_IN_DB | `1` |
+| ENABLE_PDF | `0` |
+| MAX_UPLOAD_MB | `4` |
+| ENABLE_DOCS | `0` |
 
-Jangan menampilkan nilai DATABASE_URL, SECRET_KEY, password, token, atau kredensial lain dalam issue, commit, screenshot publik, maupun laporan.
+Jangan memasukkan nilai DATABASE_URL, SECRET_KEY, password, token, atau kredensial lain ke GitHub, issue, screenshot publik, atau laporan.
 
-### Batasan runtime Vercel
+### Batas runtime Vercel
 
-- PostgreSQL persisten wajib. backend/app/config.py menolak startup jika DATABASE_URL kosong atau menunjuk SQLite.
-- EVIDENCE_IN_DB=1 wajib agar bukti tersimpan sebagai BLOB di PostgreSQL, bukan di filesystem Function yang sementara.
-- ENABLE_PDF=0 wajib karena LibreOffice tidak dibundel pada Python runtime Vercel. DOCX adalah format laporan yang disiapkan untuk Vercel.
-- Upload dibatasi hingga 4 MB untuk menyesuaikan batas request body Function.
-- /tmp/scopeline hanya untuk data sementara; database menyimpan data aplikasi, bukti, dan template.
-- Backup, retensi, point-in-time recovery, enkripsi at-rest, pemantauan, dan pembatasan akses database harus ditetapkan pada sisi provider sebelum data operasional nyata digunakan.
+- PostgreSQL persisten wajib untuk data production; SQLite hanya untuk pengembangan dan test.
+- Evidence disimpan sebagai BLOB di PostgreSQL saat `EVIDENCE_IN_DB=1`; filesystem Function bersifat sementara.
+- PDF dinonaktifkan pada Vercel karena LibreOffice tidak tersedia; DOCX adalah format laporan production.
+- Upload dibatasi 4 MB.
+- `/tmp/scopeline` hanya untuk data sementara.
+- Backup, restore, retensi, point-in-time recovery, dan enkripsi at-rest perlu ditetapkan/diverifikasi di sisi provider.
+- MFA TOTP tersedia tetapi opt-in.
+- IP rate limit masih in-memory per proses, bukan distributed.
 
-## Verifikasi yang masih harus dilakukan terhadap Production
+## Runtime verification dan acceptance
 
-Deployment READY dan environment variable yang tersedia belum membuktikan koneksi database atau alur bisnis berhasil pada runtime. Sebelum menyatakan production-ready, lakukan dan catat bukti berikut:
+Pemeriksaan error aggregation Vercel untuk 24 jam terakhir tidak menemukan runtime error. Query runtime logs 24 jam ditolak karena retensi log paket Hobby tidak mencakup rentang tersebut. Ini bukan bukti bahwa seluruh endpoint dan proses bisnis lulus.
 
-- [ ] GET /api/health mengembalikan HTTP 200 dan status ok.
-- [ ] Login Admin berhasil; kata sandi awal telah dirotasi dan MFA sesuai kebijakan organisasi.
-- [ ] Admin membuat akun dan setiap role hanya melihat/melakukan aksi yang diizinkan.
-- [ ] Engagement tidak dapat diaktifkan sebelum RoE disetujui.
-- [ ] Perubahan scope/RoE membatalkan approval dan menjeda engagement.
-- [ ] Tester dapat membuat temuan; CVSS dihitung server.
-- [ ] Upload, unduh, dan hapus bukti berjalan; file tersimpan di PostgreSQL.
-- [ ] Review empat mata berjalan; temuan yang berubah kembali ke Draft.
-- [ ] Ronde retest dan perbandingan pretest/retest berjalan.
-- [ ] DOCX pretest/retest dapat diunduh; laporan final hanya berisi temuan Approved.
-- [ ] Technical Writer tidak dapat melihat atau mengunduh bukti mentah.
+Checklist yang harus dijalankan terhadap deployment Production terbaru:
+
+- [ ] GET endpoint health mengembalikan HTTP 200 dan status sehat.
+- [ ] Login Admin berhasil; kredensial awal telah dirotasi.
+- [ ] Uji 401 untuk akses tanpa token.
+- [ ] Uji 403 untuk role yang tidak berwenang.
+- [ ] Uji dashboard untuk kelima role dan pastikan tidak ada kebocoran lintas engagement.
+- [ ] Engagement tidak dapat diaktifkan sebelum scope dan RoE disetujui.
+- [ ] Perubahan scope/RoE membatalkan approval.
+- [ ] Temuan baru memakai CVSS v4.0; score dihitung server-side.
+- [ ] Penilaian historis v3.1 tetap dapat ditelusuri.
+- [ ] Upload, unduh, dan hapus bukti berhasil; Technical Writer tidak dapat mengunduh bukti mentah.
+- [ ] Review four-eyes berjalan dan perubahan temuan mereset review.
+- [ ] Retest tersimpan per ronde.
+- [ ] DOCX dapat diunduh; laporan final hanya berisi temuan Approved.
 - [ ] Audit log mencatat aktivitas penting.
-- [ ] TLS, backup/restore, retensi, dan kontrol database diverifikasi.
-
-Pada pemeriksaan ini, pembacaan log runtime Vercel untuk 50 menit terakhir tidak mengembalikan entri. Hal tersebut hanya berarti tidak ada log yang tersedia pada rentang/filter tersebut; bukan bukti bahwa aplikasi gagal atau berhasil. Endpoint health dan alur di atas belum diklaim lulus dari pemeriksaan ini.
-
-## Catatan perubahan terhadap status 10 November
-
-Catatan sebelumnya menyebut DATABASE_URL belum tersedia dan PostgreSQL belum terhubung. Status tersebut sudah kedaluwarsa: pada pemeriksaan 11 November, metadata environment Production menunjukkan DATABASE_URL sudah ada dan deployment terbaru berstatus READY. Namun, status verifikasi runtime tetap harus dibedakan dari provisioning environment dan build deployment.
+- [ ] TLS, backup/restore, retensi, dan kontrol akses database diverifikasi.
+- [ ] Catat tanggal, commit SHA, deployment ID, akun uji/role, hasil, dan bukti untuk setiap acceptance test.
 
 ## Kesimpulan
 
-CVSS v4.0 sudah masuk ke branch `main`. CI pada branch PR lulus, sedangkan CI pasca-merge perlu ditunggu hingga selesai. Deployment Vercel READY yang tercatat di atas berasal dari commit sebelumnya; deployment pasca-merge dan runtime acceptance belum diverifikasi. Status akurat: **CVSS v4.0 merged; build/deployment pasca-merge menunggu verifikasi; runtime acceptance belum diverifikasi**.
+CVSS v4.0 telah digabung ke `main`, dan CI branch PR #9 lulus. Vercel terhubung ke repository; deployment Production sebelumnya berstatus READY, sedangkan deployment dokumentasi yang lebih baru sedang diproses saat pemeriksaan. Error aggregation 24 jam tidak menemukan error, tetapi log detail 24 jam tidak tersedia pada paket Hobby. **Status yang dapat diklaim: aplikasi terhubung ke Vercel; deployment terbaru menunggu konfirmasi READY; runtime acceptance bisnis belum diverifikasi.**
