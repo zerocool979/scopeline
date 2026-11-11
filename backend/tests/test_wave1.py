@@ -361,7 +361,7 @@ with engine.connect() as c:
 @pytest.mark.parametrize("drop_data", [False, True])
 def test_legacy_database_is_adopted(tmp_path, drop_data):
     out = _run(LEGACY % {"drop_data": drop_data}, f"sqlite:///{tmp_path}/legacy.db", tmp_path)
-    assert out.splitlines()[-1] == "Lama approved 0002 True True"  # data utuh, temuan lama dianggap sudah disetujui
+    assert out.splitlines()[-1] == "Lama approved 0003 True True"  # data utuh, temuan lama dianggap sudah disetujui
 
 
 def test_login_with_new_roles(client, tokens):
