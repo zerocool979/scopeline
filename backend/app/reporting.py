@@ -290,7 +290,10 @@ def build_docx(kind: str, eng: dict, findings: list[dict], *, evidence_dir: Path
             marker._p.addprevious(el)
         marker._p.getparent().remove(marker._p)
 
-    foot = doc.add_paragraph(f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today} | CVSS owned by FIRST and used by permission.")
+    foot = doc.add_paragraph(
+        f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today} | "
+        "CVSS owned by FIRST and used by permission."
+    )
     foot.runs[0].font.size = Pt(8)
     buf = io.BytesIO()
     doc.save(buf)
