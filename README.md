@@ -87,3 +87,10 @@ Deployment Production terbaru yang diperiksa berstatus **READY** pada commit f49
 - Enkripsi at-rest bukti bergantung konfigurasi provider database.
 - PDF hanya dapat diekspor di lingkungan yang menyediakan LibreOffice; nonaktif di Vercel.
 - Backup, restore, retensi, dan verifikasi runtime produksi perlu prosedur dan bukti tersendiri.
+
+
+### Versi CVSS
+
+Kalkulator aktif menggunakan CVSS v4.0 (CVSS-B) melalui pustaka Python `cvss` 3.6 yang mendukung CVSS4. Vektor wajib menyertakan 11 Base metrics sesuai urutan FIRST; metrik Threat/Environmental/Supplemental opsional yang disediakan dipertahankan dan diproses kalkulator. Skor ditampilkan bersama vector dan nomenklatur yang mencerminkan kelompok metrik yang digunakan.
+
+Migrasi database menandai temuan lama sebagai CVSS v3.1 tanpa menghitung ulang skor. Saat temuan lama dinilai ulang, vector/score/severity v3.1 disalin ke kolom riwayat sebelum nilai aktif diganti v4.0. Laporan DOCX menampilkan versi dan vector yang sesuai. Sumber: [FIRST CVSS v4.0 Specification](https://www.first.org/cvss/v4.0/specification-document).
