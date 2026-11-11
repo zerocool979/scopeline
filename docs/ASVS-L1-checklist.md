@@ -1,23 +1,47 @@
-# Pemeriksaan mandiri OWASP ASVS Level 1 (draf untuk Sprint 6)
+# Pemeriksaan mandiri OWASP ASVS Level 1
 
-Status: ✅ diimplementasikan & diuji otomatis · 🔎 perlu verifikasi manual/pembimbing · ⚠️ keterbatasan diketahui
+**Status dokumen:** self-assessment teknis, bukan sertifikasi atau audit keamanan independen.  
+**Baseline kode:** branch main, commit f49736200295fc33e63030d178dfb85e35bbd25c (11 November 2026).
 
-| Area ASVS | Kontrol | Status | Bukti |
+Legenda: ✅ kontrol tampak diimplementasikan dan tercakup dalam pengujian otomatis; 🔎 perlu verifikasi manual/lingkungan; ⚠️ keterbatasan atau risiko tersisa.
+
+| Area | Kontrol / kondisi implementasi | Status | Bukti / catatan |
 |---|---|---|---|
-| V2 Autentikasi | Hash Argon2id; kata sandi ≥10 karakter; pembatasan percobaan (kunci akun 15 mnt + batas per IP); pesan galat seragam; MFA TOTP | ✅ | `security.py`, `routers/auth.py`, `test_login_lockout_and_generic_error`, `test_mfa_flow` |
-| V3 Sesi | Token bertanda tangan, kedaluwarsa, dicabut saat ganti sandi/peran/nonaktif | ✅ | `test_password_change_invalidates_token` |
-| V4 Kontrol akses | RBAC pada setiap endpoint; akses objek (penguji hanya engagement tugasnya → 404) | ✅ | `deps.py`, `test_object_level_access` |
-| V5 Validasi | Skema Pydantic (panjang/tipe/tanggal), vektor CVSS divalidasi ketat, ORM berparameter (anti SQLi), DOM via `textContent` (anti XSS), CSV dibatasi | ✅ | `schemas.py`, `cvss.py` |
-| V5 Unggahan | Whitelist ekstensi, cek magic bytes, batas 5 MB, nama acak di disk, unduh `attachment` + `nosniff` | ✅ | `test_evidence_upload_rules` |
-| V7 Log | Audit login gagal/berhasil, RoE, temuan, ekspor, perubahan pengguna | ✅ | `audit.py`, `test_dashboard_and_audit` |
-| V8 Data | Rahasia via variabel lingkungan; `secret.key` 0600 bila dibuat otomatis | ✅ | `config.py` |
-| V8 Data | Enkripsi bukti at-rest | ⚠️ mengandalkan enkripsi volume/disk host | — |
-| V9 Komunikasi | TLS | 🔎 diterminasi di reverse proxy (Let's Encrypt) — wajib pada staging | — |
-| V12 Berkas | Tidak ada eksekusi berkas unggahan; konversi PDF memakai argumen tetap tanpa shell | ✅ | `reporting.py` |
-| V14 Konfigurasi | CSP ketat, X-Frame-Options, nosniff, no-store pada API; docs API nonaktif default; kontainer non-root; SAST (Bandit) & pip-audit di CI | ✅ | `main.py`, `Dockerfile`, `.github/workflows/ci.yml` |
-| — | CSRF | ✅ token di header (bukan cookie) | README |
-| — | Rate limit login in-memory per proses | ⚠️ tidak dibagi antar-worker; kunci akun berbasis DB tetap berlaku | `routers/auth.py` |
-| V5 Keluaran | Markdown catatan dirender node-demi-node (tanpa innerHTML); tautan hanya http(s) dengan `noopener`; HTML mentah tampil sebagai teks | ✅ | `e2e/ui.test.js` (langkah "Catatan Markdown") |
-| V4 Kontrol akses | Technical Writer tanpa bukti mentah; catatan pribadi hanya pemilik/Lead/Admin; empat mata pada review | ✅ | `tests/test_wave1.py` |
-| V5 Unggahan | Templat laporan (.docx divalidasi dibuka, ≤5 MB) dan templat catatan (.md UTF-8, ≤200 KB) | ✅ | `routers/templates.py`, `routers/notes.py` |
-| V14 Konfigurasi | Skema berversi (Alembic) dan diuji identik dengan model; FK ditegakkan juga pada SQLite | ✅ | `test_migrations_match_models` |
+| Autentikasi | Argon2 password hashing; password minimum 10 karakter pada skema API; pesan login gagal seragam | ✅ | security.py, schemas.py, routers/auth.py |
+| Autentikasi | Penguncian akun setelah 5 kegagalan (default 15 menit) dan rate limit IP 20/menit (default) | ✅ / ⚠️ | Penguncian akun tersimpan di DB; limiter IP in-memory per proses, bukan distributed |
+| Autentikasi | MFA TOTP | ⚠️ | Fitur setup/enable/disable dan validasi OTP tersedia; opt-in, belum dipaksa untuk semua akun |
+| Sesi | JWT HS256 bertanda tangan dan expiry; token_version membatalkan sesi setelah password/peran/status akun berubah | ✅ | security.py, deps.py, test auth |
+| Akses | RBAC per endpoint dan pemeriksaan akses objek berdasarkan anggota engagement | ✅ | deps.py, test_object_level_access |
+| Akses | Aturan empat mata; Technical Writer tidak memperoleh bukti mentah | ✅ | routers/findings.py, test_wave1.py |
+| Validasi | Pydantic, validasi tanggal dan panjang field, CVSS dihitung di server | ✅ | schemas.py, cvss.py, test CVSS |
+| Input/output | SQLAlchemy ORM; DOM frontend menggunakan mekanisme teks aman; Markdown diparse tanpa HTML mentah | ✅ | models.py, static/app.js, E2E anti-XSS |
+| Unggahan | Allowlist PNG/JPG/JPEG/GIF/PDF/TXT/LOG, cek magic bytes/isi dasar, nama acak, batas upload | ✅ | routers/findings.py; 5 MB default lokal, maksimal 4 MB di Vercel |
+| Bukti | Download attachment dengan nosniff; akses sesuai engagement; Technical Writer ditolak | ✅ | GET /api/evidence/{id}/download |
+| Data at-rest | Bukti dapat disimpan sebagai BLOB PostgreSQL dengan EVIDENCE_IN_DB=1 | ⚠️ | Tidak ada bukti enkripsi field-level pada aplikasi; enkripsi at-rest bergantung provider/konfigurasi |
+| Audit | Login, perubahan engagement/RoE, temuan, retest, ekspor, dan aksi penting dicatat | ✅ | audit.py, routers/* |
+| Komunikasi | HTTPS/TLS pada deployment publik | 🔎 | Verifikasi sertifikat, domain, dan konfigurasi TLS pada domain aktif |
+| Berkas | DOCX dibuka dan divalidasi; PDF memakai LibreOffice dengan argumen tetap tanpa shell | ✅ / 🔎 | PDF dinonaktifkan pada Vercel; hanya lingkungan yang menyediakan LibreOffice |
+| Konfigurasi | CSP, X-Frame-Options, nosniff, Referrer-Policy, no-store API; docs API nonaktif default | ✅ | main.py |
+| Dependensi | Ruff, Bandit, pip-audit di CI | ✅ | GitHub Actions CI run #59 sukses pada 11 Nov 2026 |
+| Pengujian | Coverage gate 70%, pytest SQLite dan PostgreSQL, E2E UI, Docker build | ✅ | Workflow .github/workflows/ci.yml; run #59 success |
+| Migrasi | Alembic dan pengujian migrasi/model; FK SQLite ditegakkan | ✅ | migrate.py, database.py, test_migrations_match_models |
+| CSRF | Token dikirim lewat header Bearer, bukan cookie | ✅ | deps.py, frontend |
+
+## Batas interpretasi
+
+1. Lulus CI berarti test dan pemeriksaan otomatis pada commit yang disebut berhasil; itu tidak sama dengan audit ASVS penuh.
+2. TOTP adalah kemampuan yang tersedia, bukan kebijakan wajib untuk seluruh pengguna.
+3. Rate limit IP in-memory tidak berbagi state antar-instance/worker.
+4. Enkripsi bukti at-rest tidak boleh diklaim sebagai enkripsi aplikasi; pastikan konfigurasi enkripsi dan backup provider database.
+5. TLS, backup/restore, retensi, pemantauan, dan pembatasan akses database perlu bukti dari lingkungan deployment.
+6. Upload lokal default 5 MB, tetapi Vercel dikonfigurasi 4 MB; dokumentasi dan acceptance test harus menyebut konteks lingkungan.
+7. Pada Vercel, PDF nonaktif karena runtime tidak menyediakan LibreOffice; DOCX tetap format ekspor yang disiapkan.
+
+## Pemeriksaan manual sebelum klaim keamanan
+
+- [ ] Verifikasi TLS pada domain produksi dan konfigurasi header di respons aktual.
+- [ ] Verifikasi backup dan uji restore PostgreSQL.
+- [ ] Verifikasi kebijakan retensi serta kontrol akses database.
+- [ ] Putuskan apakah MFA harus diwajibkan bagi role tertentu.
+- [ ] Evaluasi rate limit lintas-instance jika aplikasi diskalakan.
+- [ ] Jalankan review ASVS manual dan dokumentasikan temuan, pengecualian, serta persetujuan risiko.
