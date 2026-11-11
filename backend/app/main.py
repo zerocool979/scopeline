@@ -1,4 +1,5 @@
 import logging
+import os
 import secrets
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -6,10 +7,11 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
+from . import audit
 from .config import settings
 from .database import SessionLocal
 from .migrate import run_migrations
-from .models import ReportTemplate, User, utcnow
+from .models import AuditLog, ReportTemplate, User, utcnow
 from .routers import auth, engagements, findings, notes, reports, templates, users
 from .security import hash_password
 
@@ -19,6 +21,27 @@ STATIC = Path(__file__).parent / "static"
 
 def bootstrap_admin() -> None:
     with SessionLocal() as db:
+        existing = db.query(User).filter(User.username == settings.admin_username).first()
+        reset_requested = os.getenv("ADMIN_PASSWORD_RESET_ONCE") == "1"
+        reset_done = db.query(AuditLog.id).filter(
+            AuditLog.action == "admin_password_reset_once",
+            AuditLog.username == settings.admin_username,
+        ).first() is not None
+        if existing:
+            if reset_requested and not reset_done:
+                if len(settings.admin_password) < 12:
+                    raise RuntimeError("ADMIN_PASSWORD wajib tersedia untuk reset admin satu kali.")
+                existing.password_hash = hash_password(settings.admin_password)
+                existing.failed_attempts = 0
+                existing.locked_until = None
+                existing.token_version += 1
+                audit.log(
+                    db, existing, "admin_password_reset_once", "user", existing.id,
+                    detail="One-time bootstrap credential rotation.",
+                )
+                db.commit()
+                log.info("Kredensial administrator dirotasi satu kali melalui bootstrap.")
+            return
         if db.query(User).count():
             return
         password = settings.admin_password
