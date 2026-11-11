@@ -246,7 +246,7 @@ Keputusan penting dicatat dengan tanggal, konteks, alternatif, keputusan, approv
 
 ### Belum boleh diklaim selesai
 - CI pada commit merge `bca1d52479aa7537df025c4a3dc84d2807453705` masih berjalan pada pemeriksaan terakhir.
-- Deployment Vercel pasca-merge belum diverifikasi.
+- Deployment Vercel untuk commit aplikasi CVSS v4.0 telah berstatus READY; deployment dokumentasi yang lebih baru mengikuti auto-deploy GitHub dan harus dicek pada status deployment terbaru. Runtime acceptance bisnis masih belum diverifikasi.
 - Runtime acceptance production, backup/restore, TLS, retensi, dan health check belum memiliki bukti sign-off.
 - Tanggal realisasi sprint, actual effort, dan acceptance stakeholder belum disediakan; PM perlu mengisi dari catatan proyek.
 
