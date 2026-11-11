@@ -1,6 +1,7 @@
 """Konfigurasi aplikasi. Seluruh rahasia dibaca dari variabel lingkungan."""
 import os
 import secrets
+import tempfile
 from pathlib import Path
 
 
@@ -23,7 +24,7 @@ class Settings:
         self.enable_pdf = os.getenv("ENABLE_PDF", "1") == "1"
         if is_vercel and self.enable_pdf:
             raise RuntimeError("ENABLE_PDF=0 wajib pada Vercel; LibreOffice tidak dibundel pada runtime ini.")
-        default_data_dir = "/tmp/scopeline" if is_vercel else "./data"
+        default_data_dir = str(Path(tempfile.gettempdir()) / "scopeline") if is_vercel else "./data"
         self.data_dir = Path(os.getenv("DATA_DIR", default_data_dir))
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.secret_key = os.getenv("SECRET_KEY", "")
