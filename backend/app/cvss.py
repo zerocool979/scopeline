@@ -32,7 +32,6 @@ def normalize_vector(vector: str) -> str:
     return CVSS4(raw).clean_vector()
 
 
-
 def nomenclature(vector: str) -> str:
     values = parse_vector(vector)
     threat = values.get("E", "X") != "X"
