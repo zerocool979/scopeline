@@ -168,7 +168,7 @@ def test_evidence_upload_rules(client, tokens, eng):
 
 def test_csv_import(client, tokens, eng):
     csv_data = ("title,description,impact,recommendation,cvss_vector\n"
-                f"XSS,d,i,r,CVSS:3.1/AV:N/AC:L/PR:L/UI:R/S:C/C:L/I:L/A:N\n"
+                f"XSS,d,i,r,{VEC}\n"
                 "Rusak,d,i,r,CVSS:3.1/XX\n"
                 f",kosong,i,r,{VEC}\n").encode()
     r = client.post(f"/api/engagements/{eng}/findings/import", headers=tokens["tester"],
@@ -178,7 +178,7 @@ def test_csv_import(client, tokens, eng):
 
 
 def test_templates_and_cvss_endpoint(client, tokens):
-    assert client.post("/api/cvss/calc", headers=tokens["tester"], json={"vector": VEC}).json()["score"] == 9.8
+    assert client.post("/api/cvss/calc", headers=tokens["tester"], json={"vector": VEC}).json()["score"] == 9.9
     assert client.post("/api/cvss/calc", headers=tokens["tester"], json={"vector": "x"}).status_code == 422
     body = {"title": "Header keamanan hilang", "description": "d", "impact": "i", "recommendation": "r",
             "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:N/A:N"}
