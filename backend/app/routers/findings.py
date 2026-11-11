@@ -57,7 +57,8 @@ def finding_out(f: Finding, with_evidence: bool = True, blobs: bool = False) -> 
         "recommendation": f.recommendation, "cvss_vector": f.cvss_vector, "cvss_version": f.cvss_version,
         "cvss_score": f.cvss_score, "severity": f.severity,
         "cvss_legacy_vector": f.cvss_legacy_vector, "cvss_legacy_score": f.cvss_legacy_score,
-        "cvss_legacy_severity": f.cvss_legacy_severity, "cvss_legacy_version": f.cvss_legacy_version, "status": f.status, "retest_notes": f.retest_notes,
+        "cvss_legacy_severity": f.cvss_legacy_severity, "cvss_legacy_version": f.cvss_legacy_version,
+        "status": f.status, "retest_notes": f.retest_notes,
         "review_status": f.review_status, "review_note": f.review_note, "created_by_id": f.created_by_id,
         "due_date": f.due_date, "created_at": f.created_at, "updated_at": f.updated_at,
         "evidence": [_ev_out(ev, blobs) for ev in f.evidence if ev.retest_id is None] if with_evidence else [],
@@ -379,7 +380,11 @@ def list_templates(db: Session = Depends(get_db), _: User = Depends(current_user
 @router.post("/finding-templates", status_code=201)
 def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
     _score(data.cvss_vector)
-    t = FindingTemplate(**data.model_dump(exclude={"cvss_vector"}), cvss_vector=normalize_vector(data.cvss_vector), cvss_version="4.0")
+    t = FindingTemplate(
+        **data.model_dump(exclude={"cvss_vector"}),
+        cvss_vector=normalize_vector(data.cvss_vector),
+        cvss_version="4.0",
+    )
     db.add(t)
     db.flush()
     audit.log(db, user, "template_created", "template", t.id, t.title)
