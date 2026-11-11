@@ -2,7 +2,7 @@
 
 **Tujuan:** mencatat keputusan revisi dokumen berdasarkan 12 komentar Bilal dan membedakan kebutuhan yang sudah ada di source code dari usulan yang masih memerlukan perubahan implementasi.
 
-**Acuan perilaku:** baseline awal branch `main`, commit `f49736200295fc33e63030d178dfb85e35bbd25c` (11 November 2026), dan perubahan CVSS pada branch `feature/cvss-v4-migration`. Untuk kondisi implementasi v4.0, source dan test pada branch migrasi adalah acuan; sebelum PR #9 digabung, branch `main` tetap berisi kalkulator v3.1.
+**Acuan perilaku:** branch `main` setelah PR #9 digabung (merge commit `bca1d52479aa7537df025c4a3dc84d2807453705`) dan dokumentasi PA/PM yang diselaraskan pada 11 November 2026. Source code dan test pada `main` adalah acuan perilaku implementasi.
 
 ## Keputusan final baseline dokumentasi
 
@@ -32,12 +32,12 @@ Keputusan kerja untuk penyelarasan dokumen akademik ditetapkan sebagai berikut:
 | 1 | Stack pada abstrak | Ganti deskripsi SQLite/HMAC-SHA256 dengan Python 3.12, FastAPI, SQLAlchemy, PostgreSQL untuk Vercel/produksi, SQLite hanya lokal/test, HTML/CSS/JS vanilla, Argon2 + JWT HS256. Sebut Docker Compose hanya untuk lokal/hosting mandiri. | Sudah sesuai source |
 | 2 | Fase berikutnya / kontrak API | Pisahkan demo lokal dari target deployment. REST API FastAPI tetap menjadi kontrak backend; target Vercel bukan lagi sekadar fase berikutnya karena deployment Production berstatus READY. Namun runtime acceptance tetap perlu pengujian langsung. | Deployment metadata READY; runtime acceptance belum dibuktikan |
 | 3 | Data uji fiktif atau SAWALA | Pertahankan data sintetis sebagai default. Dataset UAS SAWALA hanya boleh dipakai setelah ada izin pemilik data/dosen, penghapusan identitas dan rahasia, serta konfirmasi bahwa scope dan bukti boleh digunakan. SCOPELINE tidak boleh dipakai untuk menguji target tanpa otorisasi tertulis. | Keputusan tata kelola; belum ada bukti dataset SAWALA disetujui/diintegrasikan |
-| 4 | Versi CVSS | CVSS v4.0 disetujui sebagai kalkulator aktif; branch migrasi menerapkan parser, scoring, UI, API, penyimpanan versi, dan laporan. Temuan historis v3.1 tidak dihitung ulang. | Branch migrasi menerima vector `CVSS:4.0`; v3.1 tetap disimpan untuk histori |
+| 4 | Versi CVSS | CVSS v4.0 disetujui sebagai kalkulator aktif; branch migrasi menerapkan parser, scoring, UI, API, penyimpanan versi, dan laporan. Temuan historis v3.1 tidak dihitung ulang. | CVSS v4.0 aktif pada `main`; v3.1 tetap disimpan untuk histori |
 | 5 | FR-01 dan FR-08, lima peran | Rinci autentikasi/pengelolaan pengguna dan dasbor per role. Gunakan pemetaan final nomenklatur proyek: Admin System → Admin; Project Management → Lead; Engineer-Head Offensive Security → Peninjau/Reviewer; Engineer-Lead of Technical Writer → Technical Writer; Engineer-Red Team → Penguji/Tester. Kode role dan izin backend tetap dipertahankan. | Lima role dan dasbor ada; kesetaraan nama organisasi perlu keputusan |
-| 6 | Kalkulator CVSS di tabel FR | Rumuskan sebagai “Kalkulator CVSS v4.0 (server-side; CVSS-B untuk Base metrics)”; dokumen harus menyatakan temuan historis v3.1 tetap terpelihara. | Branch migrasi telah menggunakan CVSS v4.0; menunggu CI/review |
+| 6 | Kalkulator CVSS di tabel FR | Rumuskan sebagai “Kalkulator CVSS v4.0 (server-side; CVSS-B untuk Base metrics)”; dokumen harus menyatakan temuan historis v3.1 tetap terpelihara. | CVSS v4.0 telah di-merge ke `main` melalui PR #9; CI branch PR lulus |
 | 7 | Fungsi khusus perhitungan vektor | Jelaskan kalkulasi dipisahkan dalam modul `backend/app/cvss.py`, divalidasi, lalu dipakai oleh endpoint kalkulasi dan alur create/update finding. Kriteria uji harus menguji vektor valid/tidak valid, skor, severity, dan konsistensi endpoint dengan penyimpanan temuan. | Sudah diimplementasikan |
 | 8 | Tabel NFR | Susun NFR sebagai tabel tersendiri dengan ID, kebutuhan, prioritas, kriteria uji, dan status/bukti. Bedakan kontrol teruji otomatis dari hal yang masih perlu verifikasi manual. | Perlu perapian dokumen kebutuhan; kontrol ada dengan batasan yang dicatat di ASVS checklist |
-| 9 | Docker Compose / Vercel | Ubah NFR deployment menjadi deployment Vercel dengan PostgreSQL persisten, konfigurasi environment, penyimpanan bukti di DB, dan batasan PDF. Docker Compose dipertahankan sebagai jalur dev/lokal, bukan kriteria deployment produksi. | Konfigurasi Vercel tersedia; runtime acceptance belum dibuktikan |
+| 9 | Docker Compose / Vercel | Ubah NFR deployment menjadi deployment Vercel dengan PostgreSQL persisten, konfigurasi environment, penyimpanan bukti di DB, dan batasan PDF. Docker Compose dipertahankan sebagai jalur dev/lokal, bukan kriteria deployment produksi. | Deployment Production terbaru yang diperiksa berstatus READY; runtime acceptance bisnis tetap belum dibuktikan |
 | 10 | Opsi hitung manual atau sistem | Dokumentasi *as-built* menyatakan skor dihitung backend dari vektor CVSS; tidak ada mode input skor manual yang terverifikasi di source. Opsi manual dapat dicatat sebagai usulan perubahan, dengan aturan validasi, audit, dan penandaan sumber skor sebelum diimplementasikan. | Belum diimplementasikan; jangan didokumentasikan sebagai fitur aktif |
 | 11 | Subbab tech stack | Susun ulang stack berdasarkan runtime Vercel dan pemisahan lokal/produksi sebagaimana bagian arsitektur pada baseline. Sertakan alasan pemilihan, trade-off, dan batasan PDF/filesystem serverless. | Sudah sesuai source; narasi dokumen akademik perlu diselaraskan |
 | 12 | Kesimpulan dan deployment | Kesimpulan menyatakan target deployment Vercel dan PostgreSQL; Docker Compose disebut sebagai sarana lokal. Bedakan status deployment READY dengan penerimaan runtime yang belum diverifikasi. | Metadata deployment READY; uji penerimaan runtime belum dibuktikan |
@@ -79,8 +79,8 @@ Tabel berikut adalah rumusan kebutuhan yang dapat dipakai untuk memperbarui maka
 
 ## Batas klaim deployment dan pengujian
 
-- CI pada commit baseline `f497362...` lulus; itu bukan bukti seluruh acceptance test produksi selesai.
-- Metadata Vercel menunjukkan deployment Production READY pada baseline kode. Pemeriksaan login, dashboard kelima role, database, unggah/unduh bukti, review, retest, dan ekspor DOCX tetap harus dicatat dengan tanggal, akun uji, hasil, dan bukti.
+- CI branch PR #9 (`43030825984`) lulus; itu bukan bukti seluruh acceptance test produksi selesai.
+- Metadata Vercel menunjukkan deployment Production terbaru yang diperiksa berstatus READY pada commit `f2bc3637`. Pemeriksaan login, dashboard kelima role, database, unggah/unduh bukti, review, retest, dan ekspor DOCX tetap harus dicatat dengan tanggal, akun uji, hasil, dan bukti.
 - Jangan menyebut PDF tersedia pada Vercel; konfigurasi yang diperiksa menonaktifkannya.
 - Jangan menyebut opsi hitung skor manual atau dataset SAWALA sebagai fitur yang telah diterapkan tanpa perubahan kode/bukti.
 
