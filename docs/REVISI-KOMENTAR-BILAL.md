@@ -2,7 +2,7 @@
 
 **Tujuan:** mencatat keputusan revisi dokumen berdasarkan 12 komentar Bilal dan membedakan kebutuhan yang sudah ada di source code dari usulan yang masih memerlukan perubahan implementasi.
 
-**Acuan perilaku:** source code branch `main`, baseline commit `f49736200295fc33e63030d178dfb85e35bbd25c` (11 November 2026), terutama `backend/app/models.py`, `backend/app/routers/`, `backend/app/cvss.py`, test suite, serta dokumen `PROJECT-REALITY-BASELINE.md`. Source code adalah acuan untuk klaim *as-built*; komentar Bilal adalah masukan kebutuhan/arah revisi.
+**Acuan perilaku:** baseline awal branch `main`, commit `f49736200295fc33e63030d178dfb85e35bbd25c` (11 November 2026), dan perubahan CVSS pada branch `feature/cvss-v4-migration`. Untuk kondisi implementasi v4.0, source dan test pada branch migrasi adalah acuan; sebelum PR #9 digabung, branch `main` tetap berisi kalkulator v3.1.
 
 ## Keputusan final baseline dokumentasi
 
