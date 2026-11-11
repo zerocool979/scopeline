@@ -118,6 +118,15 @@ def test_findings_lifecycle(client, tokens, eng):
     assert f["cvss_score"] == 9.9 and f["severity"] == "critical" and f["cvss_version"] == "4.0"
     assert f["code"].startswith("F-")
     assert f["cvss_vector"].startswith("CVSS:4.0/")
+    calc = client.post("/api/cvss/calc", headers=t, json={"vector": VEC}).json()
+    assert calc["version"] == "4.0" and calc["nomenclature"] == "CVSS-B" and calc["score"] == 9.9
+    report = client.get(f"/api/engagements/{eng}/report?include_unapproved=true", headers=t)
+    assert report.status_code == 200
+    from docx import Document
+    doc = Document(io.BytesIO(report.content))
+    report_text = "\\n".join(p.text for p in doc.paragraphs) + " " + " ".join(
+        cell.text for table in doc.tables for row in table.rows for cell in row.cells)
+    assert "CVSS-B v4.0" in report_text and "CVSS:4.0/" in report_text
     r = client.patch(f"/api/findings/{f['id']}", headers=t, json={"cvss_vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:A/VC:L/VI:L/VA:N/SC:N/SI:N/SA:N"})
     assert r.json()["cvss_version"] == "4.0" and r.json()["severity"] == "medium"
     r = client.post(f"/api/findings/{f['id']}/status", headers=t, json={"status": "fixed", "notes": "patch v2"})
