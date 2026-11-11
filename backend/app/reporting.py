@@ -11,6 +11,8 @@ from pathlib import Path
 from docx import Document
 from docx.shared import Inches, Pt
 
+from .cvss import nomenclature
+
 log = logging.getLogger("scopeline.report")
 SEV_LABEL = {"critical": "Kritis", "high": "Tinggi", "medium": "Sedang", "low": "Rendah", "none": "Informasional"}
 STATUS_LABEL = {"open": "Terbuka", "fixed": "Diperbaiki", "retest_passed": "Lulus retest"}
@@ -161,11 +163,23 @@ def _evidence_block(doc, items, evidence_dir: Path, title: str = "Bukti"):
 
 def _finding_detail(doc, f: dict, evidence_dir: Path, *, show_review: bool, with_retests: bool):
     _heading(doc, f"{f['code']} [{SEV_LABEL[f['severity']]}] {f['title']}", 2)
-    meta = [("CVSS v3.1", f"{f['cvss_score']} ({SEV_LABEL[f['severity']]})"), ("Vektor", f["cvss_vector"]),
+    if f.get("cvss_version") == "4.0":
+        cvss_label = nomenclature(f["cvss_vector"]) + " v4.0"
+    else:
+        cvss_label = "CVSS v3.1 (historis)"
+    meta = [(cvss_label, f"{f['cvss_score']} ({SEV_LABEL[f['severity']]})"), ("Vektor", f["cvss_vector"]),
             ("Status", STATUS_LABEL.get(f["status"], f["status"])),
             ("Tenggat perbaikan", str(f["due_date"] or "-"))]
     if show_review:
         meta.append(("Status review", REVIEW_LABEL.get(f["review_status"], f["review_status"])))
+    if f.get("cvss_legacy_vector"):
+        legacy_severity = f.get("cvss_legacy_severity")
+        legacy_label = SEV_LABEL.get(legacy_severity, legacy_severity)
+        legacy_version = f.get("cvss_legacy_version") or "3.1"
+        meta.extend([
+            (f"Riwayat CVSS v{legacy_version}", f"{f.get('cvss_legacy_score')} ({legacy_label})"),
+            ("Vektor historis", f["cvss_legacy_vector"]),
+        ])
     _kv_table(doc, meta)
     for label, key in (("Deskripsi", "description"), ("Dampak", "impact"), ("Rekomendasi", "recommendation")):
         doc.add_paragraph().add_run(label).bold = True
@@ -242,8 +256,9 @@ def _content_retest(doc, eng, findings, period, evidence_dir, hidden, draft):
             continue
         _heading(doc, f"{n}. {BUCKET_LABEL[key]}", 1)
         n += 1
-        _grid(doc, ["ID", "Judul", "Keparahan", "CVSS", "Ronde retest", "Hasil terakhir"],
-              [[f["code"], f["title"], SEV_LABEL[f["severity"]], f["cvss_score"], len(f["retests"]),
+        _grid(doc, ["ID", "Judul", "Keparahan", "CVSS (versi)", "Ronde retest", "Hasil terakhir"],
+              [[f["code"], f["title"], SEV_LABEL[f["severity"]],
+                f"{f['cvss_score']} (v{f.get('cvss_version', '3.1')})", len(f["retests"]),
                 RESULT_LABEL.get(f["retests"][-1]["result"], "-") if f["retests"] else "-"]
                for f in sorted(items, key=lambda x: (-x["cvss_score"], x["number"]))])
     _heading(doc, f"{n}. Rincian Temuan dan Riwayat Retest", 1)
@@ -278,7 +293,10 @@ def build_docx(kind: str, eng: dict, findings: list[dict], *, evidence_dir: Path
             marker._p.addprevious(el)
         marker._p.getparent().remove(marker._p)
 
-    foot = doc.add_paragraph(f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today}")
+    foot = doc.add_paragraph(
+        f"Dibuat oleh SCOPELINE | templat {kind}: {template_label} | {today} | "
+        "CVSS owned by FIRST and used by permission."
+    )
     foot.runs[0].font.size = Pt(8)
     buf = io.BytesIO()
     doc.save(buf)

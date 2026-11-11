@@ -1,6 +1,6 @@
 # Baseline Realitas Proyek SCOPELINE (berdasarkan source code)
 
-**Versi acuan:** branch main, commit f49736200295fc33e63030d178dfb85e35bbd25c (11 November 2026).  
+**Versi acuan:** branch `feature/cvss-v4-migration`, setelah implementasi CVSS v4.0; temuan lama v3.1 dipertahankan sebagai histori.  
 **Sumber utama:** implementasi pada backend/app/, backend/tests/, e2e/, konfigurasi deployment, serta hasil CI. README dan dokumen analisis lama bukan pengganti pemeriksaan source code.
 
 ## 1. Definisi produk dan batas lingkup
@@ -17,7 +17,7 @@ SCOPELINE **bukan** alat pemindai kerentanan, eksploitasi, atau otomasi serangan
 | Otorisasi | Lima role: Admin, Lead, Tester/Penguji, Reviewer/Peninjau, Technical Writer/Writer; pemeriksaan role dan keanggotaan engagement di server |
 | Engagement | Nama, klien, scope, tanggal mulai/selesai, RoE, anggota, status draft/active/completed |
 | Gate RoE | Engagement tidak dapat diaktifkan sebelum scope dan RoE disetujui; perubahan scope/RoE membatalkan persetujuan dan mengembalikan engagement aktif ke draft |
-| Temuan | Nomor temuan per engagement, deskripsi, dampak, rekomendasi, CVSS (implementasi saat ini v3.1; keputusan target v4.0) dan rating/severity yang dihitung server, status perbaikan, tenggat |
+| Temuan | Nomor temuan per engagement, deskripsi, dampak, rekomendasi, CVSS v4.0 (CVSS-B) dan rating yang dihitung server; assessment v3.1 lama disimpan sebagai histori, status perbaikan, tenggat |
 | Bukti | Upload, validasi ekstensi dan signature/isi, batas ukuran, nama penyimpanan acak, unduh dan hapus; bukti retest ditautkan ke ronde |
 | Review | Draft → In Review → Approved / Changes Requested; aturan empat mata mencegah pembuat menyetujui temuan sendiri |
 | Retest | Ronde berurutan dengan hasil passed/failed/partial, tanggal, penguji, catatan, dan bukti |
@@ -26,7 +26,7 @@ SCOPELINE **bukan** alat pemindai kerentanan, eksploitasi, atau otomasi serangan
 | Catatan | Catatan tim dan pribadi berbasis Markdown, templat, pratinjau aman, versi dan deteksi konflik versi |
 | Operasional | Dasbor, log audit, pustaka templat temuan, impor CSV |
 
-**Keputusan produk CVSS:** CVSS v4.0 disetujui sebagai versi kalkulator aktif yang harus digunakan setelah migrasi. Ini menggantikan keputusan sebelumnya yang menjadikan v3.1 sebagai target. Akan tetapi, source *as-built* yang diperiksa masih memvalidasi `CVSS:3.1` dan menjalankan kalkulasi v3.1 di `backend/app/cvss.py`; endpoint `POST /api/cvss/calc`, alur temuan, dan integrasi terkait belum dimigrasikan. Karena itu status yang akurat saat ini adalah **keputusan target: v4.0 disetujui; implementasi aktual: v3.1**. Cutover v4.0 wajib mencakup parser dan vector format, algoritma Base Score dan rating, skema API/validasi, UI, create/update finding, penyimpanan versi kalkulator per temuan, test vector resmi, dan DOCX/report. Temuan lama v3.1 harus tetap dapat diidentifikasi dan dibaca tanpa ditafsirkan ulang sebagai v4.0. Jangan mengubah label versi saja.
+**Keputusan dan implementasi CVSS:** kalkulator aktif menggunakan CVSS v4.0 (CVSS-B) melalui pustaka `cvss` 3.6. Endpoint `POST /api/cvss/calc`, UI pemilihan 11 Base metrics, create/update finding, serta DOCX/report menggunakan v4.0. Vector v4.0 mengikuti urutan metric FIRST dan optional metrics yang disediakan dipertahankan. Migrasi database memberi penanda versi; temuan v3.1 lama tidak dihitung ulang. Ketika temuan lama dinilai ulang, pasangan vector/score/severity v3.1 disimpan di `cvss_legacy_*`, sedangkan v4.0 menjadi penilaian aktif. Sumber normatif: FIRST CVSS v4.0 Specification.
 
 Rincian implementasi dapat dilacak pada backend/app/models.py, backend/app/routers/, backend/app/reporting.py, backend/app/notes_service.py, dan pengujian terkait.
 

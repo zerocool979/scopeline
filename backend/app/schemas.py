@@ -91,7 +91,7 @@ class FindingBase(BaseModel):
     description: str = Field(default="", max_length=20000)
     impact: str = Field(default="", max_length=10000)
     recommendation: str = Field(default="", max_length=10000)
-    cvss_vector: str = Field(max_length=80)
+    cvss_vector: str = Field(max_length=512)
     due_date: date | None = None
 
 
@@ -104,7 +104,7 @@ class FindingUpdate(BaseModel):
     description: str | None = Field(default=None, max_length=20000)
     impact: str | None = Field(default=None, max_length=10000)
     recommendation: str | None = Field(default=None, max_length=10000)
-    cvss_vector: str | None = Field(default=None, max_length=80)
+    cvss_vector: str | None = Field(default=None, max_length=512)
     due_date: date | None = None
 
 
@@ -118,11 +118,11 @@ class TemplateIn(BaseModel):
     description: str = Field(default="", max_length=20000)
     impact: str = Field(default="", max_length=10000)
     recommendation: str = Field(default="", max_length=10000)
-    cvss_vector: str = Field(max_length=80)
+    cvss_vector: str = Field(max_length=512)
 
 
 class CvssIn(BaseModel):
-    vector: str = Field(max_length=80)
+    vector: str = Field(max_length=512)
 
     @field_validator("vector")
     @classmethod

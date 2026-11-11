@@ -1,72 +1,54 @@
-"""Kalkulator CVSS v3.1 (skor dasar) sesuai spesifikasi FIRST."""
-import math
+"""CVSS scoring helpers.
 
-METRICS = {
-    "AV": {"N": 0.85, "A": 0.62, "L": 0.55, "P": 0.2},
-    "AC": {"L": 0.77, "H": 0.44},
-    "PR": {"N": 0.85, "L": 0.62, "H": 0.27},
-    "UI": {"N": 0.85, "R": 0.62},
-    "S": {"U": None, "C": None},
-    "C": {"H": 0.56, "L": 0.22, "N": 0.0},
-    "I": {"H": 0.56, "L": 0.22, "N": 0.0},
-    "A": {"H": 0.56, "L": 0.22, "N": 0.0},
-}
-PR_CHANGED = {"N": 0.85, "L": 0.68, "H": 0.5}
+Active scoring is CVSS v4.0 (FIRST specification). Historical v3.1 values are
+preserved on existing findings and are never silently recalculated as v4.0.
+"""
+from cvss import CVSS4
 
 
 class CvssError(ValueError):
-    pass
+    """Raised when a CVSS v4.0 vector is invalid."""
 
 
-def parse_vector(vector: str) -> dict:
-    parts = (vector or "").strip().split("/")
-    if not parts or parts[0] != "CVSS:3.1":
-        raise CvssError("Vektor harus diawali 'CVSS:3.1'")
-    values: dict = {}
-    for part in parts[1:]:
-        key, sep, val = part.partition(":")
-        if not sep or key in values or key not in METRICS or val not in METRICS[key]:
-            raise CvssError(f"Metrik tidak valid: '{part}'")
-        values[key] = val
-    missing = [k for k in METRICS if k not in values]
-    if missing:
-        raise CvssError("Metrik belum lengkap: " + ", ".join(missing))
+def parse_vector(vector: str) -> dict[str, str]:
+    raw = (vector or "").strip()
+    if not raw.startswith("CVSS:4.0/"):
+        raise CvssError("Vektor kalkulator aktif harus diawali 'CVSS:4.0/'")
+    try:
+        parsed = CVSS4(raw)
+        canonical = parsed.clean_vector()
+    except Exception as exc:  # library exposes version-specific parser exceptions
+        raise CvssError(f"Vektor CVSS v4.0 tidak valid: {exc}") from exc
+    values: dict[str, str] = {}
+    for part in canonical.split("/")[1:]:
+        key, _, value = part.partition(":")
+        values[key] = value
     return values
 
 
-def roundup(x: float) -> float:
-    i = round(x * 100000)
-    if i % 10000 == 0:
-        return i / 100000.0
-    return (math.floor(i / 10000) + 1) / 10.0
+def normalize_vector(vector: str) -> str:
+    raw = (vector or "").strip()
+    parse_vector(raw)
+    return CVSS4(raw).clean_vector()
 
 
-def severity_of(score: float) -> str:
-    if score == 0:
-        return "none"
-    if score < 4.0:
-        return "low"
-    if score < 7.0:
-        return "medium"
-    if score < 9.0:
-        return "high"
-    return "critical"
+def nomenclature(vector: str) -> str:
+    values = parse_vector(vector)
+    threat = values.get("E", "X") != "X"
+    environmental_keys = {"CR", "IR", "AR", "MAV", "MAC", "MAT", "MPR", "MUI",
+                          "MVC", "MVI", "MVA", "MSC", "MSI", "MSA"}
+    environmental = any(values.get(key, "X") != "X" for key in environmental_keys)
+    return "CVSS-BTE" if threat and environmental else (
+        "CVSS-BT" if threat else "CVSS-BE" if environmental else "CVSS-B")
 
 
 def calculate(vector: str) -> tuple[float, str]:
-    m = parse_vector(vector)
-    changed = m["S"] == "C"
-    iss = 1 - (1 - METRICS["C"][m["C"]]) * (1 - METRICS["I"][m["I"]]) * (1 - METRICS["A"][m["A"]])
-    if changed:
-        impact = 7.52 * (iss - 0.029) - 3.25 * (iss - 0.02) ** 15
-    else:
-        impact = 6.42 * iss
-    pr = (PR_CHANGED if changed else METRICS["PR"])[m["PR"]]
-    expl = 8.22 * METRICS["AV"][m["AV"]] * METRICS["AC"][m["AC"]] * pr * METRICS["UI"][m["UI"]]
-    if impact <= 0:
-        score = 0.0
-    elif changed:
-        score = roundup(min(1.08 * (impact + expl), 10))
-    else:
-        score = roundup(min(impact + expl, 10))
-    return score, severity_of(score)
+    """Return CVSS-B v4.0 score and qualitative rating."""
+    raw = normalize_vector(vector)
+    try:
+        scorer = CVSS4(raw)
+        score = float(scorer.scores()[0])
+        rating = str(scorer.severities()[0]).lower()
+    except Exception as exc:
+        raise CvssError(f"Gagal menghitung CVSS v4.0: {exc}") from exc
+    return score, rating

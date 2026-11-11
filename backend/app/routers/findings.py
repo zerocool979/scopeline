@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from .. import audit
 from ..config import settings
-from ..cvss import CvssError, calculate
+from ..cvss import CvssError, calculate, nomenclature, normalize_vector
 from ..database import get_db
 from ..deps import AUTHORS, REVIEWERS, STAFF, TEXT_EDITORS, WRITERS, current_user, load_engagement, require_roles
 from ..models import AuditLog, Engagement, Evidence, Finding, FindingTemplate, Retest, User
@@ -54,8 +54,12 @@ def finding_out(f: Finding, with_evidence: bool = True, blobs: bool = False) -> 
     return {
         "id": f.id, "engagement_id": f.engagement_id, "number": f.number, "code": f"F-{f.number:03d}",
         "title": f.title, "description": f.description, "impact": f.impact,
-        "recommendation": f.recommendation, "cvss_vector": f.cvss_vector, "cvss_score": f.cvss_score,
-        "severity": f.severity, "status": f.status, "retest_notes": f.retest_notes,
+        "recommendation": f.recommendation, "cvss_vector": f.cvss_vector, "cvss_version": f.cvss_version,
+        "cvss_nomenclature": nomenclature(f.cvss_vector) if f.cvss_version == "4.0" else "CVSS v3.1",
+        "cvss_score": f.cvss_score, "severity": f.severity,
+        "cvss_legacy_vector": f.cvss_legacy_vector, "cvss_legacy_score": f.cvss_legacy_score,
+        "cvss_legacy_severity": f.cvss_legacy_severity, "cvss_legacy_version": f.cvss_legacy_version,
+        "status": f.status, "retest_notes": f.retest_notes,
         "review_status": f.review_status, "review_note": f.review_note, "created_by_id": f.created_by_id,
         "due_date": f.due_date, "created_at": f.created_at, "updated_at": f.updated_at,
         "evidence": [_ev_out(ev, blobs) for ev in f.evidence if ev.retest_id is None] if with_evidence else [],
@@ -94,9 +98,10 @@ def _load_finding(db: Session, user: User, fid: int) -> tuple[Finding, Engagemen
 
 def _create_finding(db: Session, e: Engagement, user: User, data: FindingIn) -> Finding:
     score, sev = _score(data.cvss_vector)
+    vector = normalize_vector(data.cvss_vector)
     nxt = (db.query(func.max(Finding.number)).filter(Finding.engagement_id == e.id).scalar() or 0) + 1
     f = Finding(engagement_id=e.id, number=nxt, created_by_id=user.id, cvss_score=score, severity=sev,
-                **data.model_dump(exclude={"cvss_vector"}), cvss_vector=data.cvss_vector.strip())
+                cvss_version="4.0", **data.model_dump(exclude={"cvss_vector"}), cvss_vector=vector)
     db.add(f)
     db.flush()
     audit.log(db, user, "finding_created", "finding", f.id, f"{e.name}: {f.title}")
@@ -106,7 +111,8 @@ def _create_finding(db: Session, e: Engagement, user: User, data: FindingIn) -> 
 @router.post("/cvss/calc")
 def cvss_calc(data: CvssIn, _: User = Depends(current_user)):
     score, sev = _score(data.vector)
-    return {"vector": data.vector, "score": score, "severity": sev}
+    return {"vector": normalize_vector(data.vector), "version": "4.0",
+            "nomenclature": nomenclature(data.vector), "score": score, "severity": sev}
 
 
 @router.get("/engagements/{eid}/findings")
@@ -173,7 +179,13 @@ def update_finding(fid: int, data: FindingUpdate, db: Session = Depends(get_db),
     else:
         _ensure_active(e)
     if "cvss_vector" in changes:
-        changes["cvss_vector"] = changes["cvss_vector"].strip()
+        changes["cvss_vector"] = normalize_vector(changes["cvss_vector"])
+        if f.cvss_version == "3.1" and f.cvss_legacy_vector is None:
+            f.cvss_legacy_vector = f.cvss_vector
+            f.cvss_legacy_score = f.cvss_score
+            f.cvss_legacy_severity = f.severity
+            f.cvss_legacy_version = "3.1"
+        f.cvss_version = "4.0"
     content_changed = any(k in changes and changes[k] != getattr(f, k) for k in TEXT_FIELDS | {"cvss_vector"})
     if "cvss_vector" in changes:
         f.cvss_score, f.severity = _score(changes["cvss_vector"])
@@ -362,13 +374,18 @@ def delete_evidence(evid: int, db: Session = Depends(get_db), user: User = Depen
 def list_templates(db: Session = Depends(get_db), _: User = Depends(current_user)):
     rows = db.query(FindingTemplate).order_by(FindingTemplate.title).all()
     return [{"id": t.id, "title": t.title, "description": t.description, "impact": t.impact,
-             "recommendation": t.recommendation, "cvss_vector": t.cvss_vector} for t in rows]
+             "recommendation": t.recommendation, "cvss_vector": t.cvss_vector,
+             "cvss_version": t.cvss_version} for t in rows]
 
 
 @router.post("/finding-templates", status_code=201)
 def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
     _score(data.cvss_vector)
-    t = FindingTemplate(**data.model_dump())
+    t = FindingTemplate(
+        **data.model_dump(exclude={"cvss_vector"}),
+        cvss_vector=normalize_vector(data.cvss_vector),
+        cvss_version="4.0",
+    )
     db.add(t)
     db.flush()
     audit.log(db, user, "template_created", "template", t.id, t.title)
