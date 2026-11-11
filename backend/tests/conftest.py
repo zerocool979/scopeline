@@ -43,7 +43,7 @@ def tokens(client):
     return out
 
 
-VEC = "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+VEC = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:H/SI:H/SA:N"
 
 
 @pytest.fixture(scope="session")
