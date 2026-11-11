@@ -20,7 +20,7 @@ Dokumen Program Analysis DOCX/PDF v1.1 di folder docs/ adalah dokumen teknis yan
 |---|---|
 | Autentikasi & pengguna | Argon2, JWT, pencabutan token, MFA TOTP opsional, lockout login, RBAC |
 | Engagement | Scope, periode, RoE, anggota, status; pengujian terkunci sampai RoE disetujui |
-| Temuan | Pencatatan, pustaka template, CVSS server-side (implementasi saat ini v3.1; target yang disetujui v4.0), bukti |
+| Temuan | Pencatatan, pustaka template, CVSS v4.0 server-side (CVSS-B), dengan preservasi penilaian historis v3.1, bukti |
 | Review | Draft → In Review → Approved / Changes Requested; aturan empat mata |
 | Retest | Ronde per temuan, hasil dan bukti, perbandingan pretest/retest |
 | Laporan | DOCX pretest/retest, template DOCX berversi; laporan final hanya memuat temuan approved |
