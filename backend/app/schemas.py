@@ -122,7 +122,7 @@ class TemplateIn(BaseModel):
 
 
 class CvssIn(BaseModel):
-    vector: str = Field(max_length=80)
+    vector: str = Field(max_length=512)
 
     @field_validator("vector")
     @classmethod
