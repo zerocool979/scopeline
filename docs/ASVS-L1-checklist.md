@@ -1,7 +1,7 @@
 # Pemeriksaan mandiri OWASP ASVS Level 1
 
 **Status dokumen:** self-assessment teknis, bukan sertifikasi atau audit keamanan independen.  
-**Baseline kode:** branch main, commit f49736200295fc33e63030d178dfb85e35bbd25c (11 November 2026).
+**Baseline kode:** branch `main`, setelah merge CVSS v4.0 pada commit `bca1d52479aa7537df025c4a3dc84d2807453705` (11 November 2026).
 
 Legenda: ✅ kontrol tampak diimplementasikan dan tercakup dalam pengujian otomatis; 🔎 perlu verifikasi manual/lingkungan; ⚠️ keterbatasan atau risiko tersisa.
 
@@ -22,8 +22,8 @@ Legenda: ✅ kontrol tampak diimplementasikan dan tercakup dalam pengujian otoma
 | Komunikasi | HTTPS/TLS pada deployment publik | 🔎 | Verifikasi sertifikat, domain, dan konfigurasi TLS pada domain aktif |
 | Berkas | DOCX dibuka dan divalidasi; PDF memakai LibreOffice dengan argumen tetap tanpa shell | ✅ / 🔎 | PDF dinonaktifkan pada Vercel; hanya lingkungan yang menyediakan LibreOffice |
 | Konfigurasi | CSP, X-Frame-Options, nosniff, Referrer-Policy, no-store API; docs API nonaktif default | ✅ | main.py |
-| Dependensi | Ruff, Bandit, pip-audit di CI | ✅ | GitHub Actions CI run #59 sukses pada 11 Nov 2026 |
-| Pengujian | Coverage gate 70%, pytest SQLite dan PostgreSQL, E2E UI, Docker build | ✅ | Workflow .github/workflows/ci.yml; run #59 success |
+| Dependensi | Ruff, Bandit, pip-audit di CI | ✅ | GitHub Actions CI branch PR #9 run `43030825984` completed/success |
+| Pengujian | Coverage gate 70%, pytest SQLite dan PostgreSQL, E2E UI, Docker build | ✅ | Workflow .github/workflows/ci.yml; run `43030825984` success pada branch PR #9 |
 | Migrasi | Alembic dan pengujian migrasi/model; FK SQLite ditegakkan | ✅ | migrate.py, database.py, test_migrations_match_models |
 | CSRF | Token dikirim lewat header Bearer, bukan cookie | ✅ | deps.py, frontend |
 
