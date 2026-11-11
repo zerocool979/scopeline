@@ -167,7 +167,7 @@ Entitas utama yang teridentifikasi pada implementasi:
 | engagements | Data engagement, klien, periode, scope, RoE, status, dan approval. |
 | engagement_members | Relasi pengguna dengan engagement dan penugasan. |
 | findings | Temuan, deskripsi, dampak, rekomendasi, CVSS, status, tenggat, dan review. |
-| evidence | Metadata dan isi bukti yang terhubung dengan temuan/retetst. |
+| evidence | Metadata dan isi bukti yang terhubung dengan temuan/retest. |
 | retests | Ronde retest, hasil, catatan, dan status perbaikan. |
 | audit_log | Jejak aksi penting. |
 | finding_templates | Pustaka template temuan. |
