@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — setelah merge CVSS v4.0
+- **Baru:** kalkulator CVSS v4.0 (CVSS-B) menjadi versi aktif pada API, UI, validasi temuan, template, dan laporan DOCX.
+- **Migrasi aman:** penilaian v3.1 yang sudah ada dipertahankan; vector, skor, severity, dan versi lama disnapshot ketika temuan dinilai ulang dengan v4.0.
+- **Laporan:** menampilkan versi penilaian, vector, nomenklatur CVSS v4.0, dan riwayat penilaian v3.1.
+- **Dependensi:** menambahkan pustaka `cvss` 3.6.
+- **CI:** pengujian unit/API pada SQLite dan PostgreSQL, E2E, audit dependensi, static security checks, coverage gate, dan Docker build.
+
 ## 1.1.0 — Gelombang 1
 - **Baru:** migrasi Alembic (baseline 0001 = skema v1.0, 0002 = Gelombang 1); adopsi otomatis database lama.
 - **Baru:** templat laporan DOCX berversi untuk **pretest** dan **retest** (draf → aktif → arsip, rollback, validasi placeholder, penanda `{{content}}`), disimpan di database.
