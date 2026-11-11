@@ -117,7 +117,7 @@ def test_findings_lifecycle(client, tokens, eng):
     f = r.json()
     assert f["cvss_score"] == 9.9 and f["severity"] == "critical" and f["cvss_version"] == "4.0"
     assert f["code"].startswith("F-")
-    assert f["cvss_vector"].startswith("CVSS:4.0/")
+    assert f["cvss_vector"].startswith("CVSS:4.0/") and f["cvss_nomenclature"] == "CVSS-B"
     template = client.post("/api/finding-templates", headers=tokens["lead"], json=FIND)
     assert template.status_code == 201
     saved_template = next(x for x in client.get("/api/finding-templates", headers=t).json() if x["id"] == template.json()["id"])
