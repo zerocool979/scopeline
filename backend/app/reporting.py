@@ -168,9 +168,11 @@ def _finding_detail(doc, f: dict, evidence_dir: Path, *, show_review: bool, with
     if show_review:
         meta.append(("Status review", REVIEW_LABEL.get(f["review_status"], f["review_status"])))
     if f.get("cvss_legacy_vector"):
+        legacy_severity = f.get("cvss_legacy_severity")
+        legacy_label = SEV_LABEL.get(legacy_severity, legacy_severity)
+        legacy_version = f.get("cvss_legacy_version") or "CVSS v3.1"
         meta.extend([
-            (f"Riwayat {f.get('cvss_legacy_version') or 'CVSS v3.1'}",
-             f"{f.get('cvss_legacy_score')} ({SEV_LABEL.get(f.get('cvss_legacy_severity'), f.get('cvss_legacy_severity'))})"),
+            (f"Riwayat {legacy_version}", f"{f.get('cvss_legacy_score')} ({legacy_label})"),
             ("Vektor historis", f["cvss_legacy_vector"]),
         ])
     _kv_table(doc, meta)
