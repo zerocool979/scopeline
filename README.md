@@ -13,7 +13,8 @@ Status implementasi: CVSS v4.0 sudah digabung ke `main`; verifikasi CI pada comm
 ## Navigasi proyek
 
 - [Rencana Manajemen Proyek](docs/PROJECT-MANAGEMENT-PLAN.md) — charter, ruang lingkup, jadwal baseline, stakeholder, RACI, risiko, mutu, dan penerimaan.
-- [Panduan kontribusi](CONTRIBUTING.md) · [Kebijakan keamanan](SECURITY.md) · [Changelog](CHANGELOG.md).
+- [Catatan keputusan](docs/DECISIONS.md) · [Checklist rilis](docs/RELEASE-CHECKLIST.md).
+- [Panduan kontribusi](CONTRIBUTING.md) · [Kebijakan keamanan](SECURITY.md) · [Kode etik](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md).
 
 ## Dokumen acuan
 
