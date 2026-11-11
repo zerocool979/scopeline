@@ -12,7 +12,8 @@ Status implementasi: CVSS v4.0 sudah digabung ke `main`; verifikasi CI pada comm
 
 ## Navigasi proyek
 
-- [Rencana Manajemen Proyek](docs/PROJECT-MANAGEMENT-PLAN.md) — charter, ruang lingkup, jadwal baseline, stakeholder, RACI, risiko, mutu, dan penerimaan.
+- [Rencana Manajemen Proyek (PM)](docs/PROJECT-MANAGEMENT-PLAN.md) — charter, ruang lingkup, jadwal baseline, stakeholder, RACI, risiko, mutu, dan penerimaan.
+- [Program Analysis & System Design (PA)](docs/PROGRAM-ANALYSIS-DESIGN.md) — proses bisnis, FR/NFR, arsitektur, data, RBAC, CVSS, keamanan, dan acceptance test.
 - [Catatan keputusan](docs/DECISIONS.md) · [Checklist rilis](docs/RELEASE-CHECKLIST.md).
 - [Panduan kontribusi](CONTRIBUTING.md) · [Kebijakan keamanan](SECURITY.md) · [Kode etik](CODE_OF_CONDUCT.md) · [Changelog](CHANGELOG.md).
 
@@ -24,7 +25,7 @@ Status implementasi: CVSS v4.0 sudah digabung ke `main`; verifikasi CI pada comm
 - [Matriks peran dan izin](docs/PERAN-DAN-IZIN.md).
 - [Pemeriksaan mandiri OWASP ASVS Level 1](docs/ASVS-L1-checklist.md).
 
-Dokumen Program Analysis DOCX/PDF v1.1 di folder docs/ adalah dokumen teknis yang perlu disinkronkan terhadap baseline kode terbaru sebelum dianggap sebagai dokumentasi terkini. Bila ada perbedaan, **source code dan test pada commit yang disebut adalah acuan perilaku implementasi**; dokumen proposal tetap acuan untuk visi dan rencana, bukan bukti fitur selesai.
+Dokumen PA dan PM di atas adalah dokumen kerja berbasis Markdown di repository. Untuk klaim *as-built*, **source code dan test pada commit yang disebut adalah acuan perilaku implementasi**; dokumen proposal tetap acuan visi dan rencana, bukan bukti fitur selesai.
 
 ## Fitur implementasi
 
