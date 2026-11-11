@@ -1,0 +1,41 @@
+name: Feature request
+description: Ajukan kebutuhan atau peningkatan SCOPELINE
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah / kebutuhan
+      description: Jelaskan kebutuhan pengguna dan konteksnya.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Usulan solusi
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Buat kriteria yang dapat diuji, termasuk role/akses bila relevan.
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioritas MoSCoW
+      options:
+        - Must
+        - Should
+        - Could
+        - Won't (perlu keputusan eksplisit)
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Dampak dan risiko
+      description: Sebutkan dampak pada scope, jadwal, data, keamanan, API, dan dokumentasi.
