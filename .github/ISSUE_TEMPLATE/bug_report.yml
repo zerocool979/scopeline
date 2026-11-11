@@ -1,0 +1,48 @@
+name: Bug report
+description: Laporkan perilaku yang salah atau regresi pada SCOPELINE
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Jangan sertakan secret, data klien, kredensial, atau bukti pengujian sensitif."
+  - type: textarea
+    id: summary
+    attributes:
+      label: Ringkasan
+      description: Apa yang terjadi?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Langkah reproduksi
+      placeholder: Gunakan data sintetis dan lingkungan yang diizinkan.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Hasil yang diharapkan
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit / versi
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Authentication / RBAC
+        - Engagement / RoE
+        - Findings / CVSS
+        - Evidence
+        - Review / Retest
+        - Reports
+        - Dashboard / Audit
+        - Deployment
+        - Other
+    validations:
+      required: true
