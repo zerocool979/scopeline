@@ -295,3 +295,4 @@ def test_legacy_cvss_history_survives_v4_reassessment(client, tokens, eng):
     assert out["cvss_legacy_score"] == 9.8
     assert out["cvss_legacy_vector"].startswith("CVSS:3.1/")
     assert out["cvss_score"] == 9.9
+    assert out["cvss_legacy_severity"] == "critical"
