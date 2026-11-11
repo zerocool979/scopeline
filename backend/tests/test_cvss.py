@@ -1,6 +1,6 @@
 import pytest
 
-from app.cvss import CvssError, calculate, normalize_vector, parse_vector
+from app.cvss import CvssError, calculate, nomenclature, normalize_vector, parse_vector
 
 
 @pytest.mark.parametrize("vector,score,severity", [
@@ -33,3 +33,11 @@ def test_invalid_or_legacy_vectors_rejected_by_active_calculator(bad):
 def test_vector_normalization():
     vector = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N"
     assert normalize_vector(vector) == vector
+
+
+def test_cvss_nomenclature_tracks_assessed_metric_groups():
+    base = "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N"
+    assert nomenclature(base) == "CVSS-B"
+    assert nomenclature(base + "/E:A") == "CVSS-BT"
+    assert nomenclature(base + "/CR:H") == "CVSS-BE"
+    assert nomenclature(base + "/E:A/CR:H") == "CVSS-BTE"
