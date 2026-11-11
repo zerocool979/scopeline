@@ -85,9 +85,14 @@ class Finding(Base):
     description = Column(Text, default="", nullable=False)
     impact = Column(Text, default="", nullable=False)
     recommendation = Column(Text, default="", nullable=False)
-    cvss_vector = Column(String(80), nullable=False)
+    cvss_vector = Column(String(512), nullable=False)
+    cvss_version = Column(String(8), default="3.1", nullable=False)
     cvss_score = Column(Float, nullable=False)
     severity = Column(String(12), nullable=False)
+    cvss_legacy_vector = Column(String(512), nullable=True)
+    cvss_legacy_score = Column(Float, nullable=True)
+    cvss_legacy_severity = Column(String(12), nullable=True)
+    cvss_legacy_version = Column(String(8), nullable=True)
     status = Column(String(16), default="open", nullable=False)
     retest_notes = Column(Text, default="", nullable=False)
     review_status = Column(String(24), default="draft", nullable=False)
@@ -146,7 +151,8 @@ class FindingTemplate(Base):
     description = Column(Text, default="", nullable=False)
     impact = Column(Text, default="", nullable=False)
     recommendation = Column(Text, default="", nullable=False)
-    cvss_vector = Column(String(80), nullable=False)
+    cvss_vector = Column(String(512), nullable=False)
+    cvss_version = Column(String(8), default="3.1", nullable=False)
 
 
 class AuditLog(Base):
