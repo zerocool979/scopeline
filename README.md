@@ -90,7 +90,7 @@ Aplikasi menolak startup jika konfigurasi wajib untuk lingkungan Vercel tidak te
 
 Alias produksi: https://scopeline-six.vercel.app
 
-CVSS v4.0 telah digabung ke `main` melalui PR #9 (merge commit `bca1d52479aa7537df025c4a3dc84d2807453705`). CI untuk commit merge sedang berjalan saat dokumen ini diperbarui; CI pada branch PR telah lulus seluruh job. Status deployment Production pasca-merge dan acceptance test runtime belum diverifikasi. Lihat [docs/DEPLOYMENT-STATUS.md](docs/DEPLOYMENT-STATUS.md) untuk status terbaru dan batas klaim.
+CVSS v4.0 telah digabung ke `main` melalui PR #9. CI branch PR telah lulus seluruh job; deployment Production otomatis terhubung ke `main`. Status deployment terbaru, CI, dan runtime acceptance dicatat pada [docs/DEPLOYMENT-STATUS.md](docs/DEPLOYMENT-STATUS.md). Deployment READY tidak dengan sendirinya membuktikan seluruh alur bisnis telah diterima.
 
 ## Batasan yang diketahui
 
