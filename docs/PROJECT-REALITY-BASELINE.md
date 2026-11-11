@@ -26,6 +26,8 @@ SCOPELINE **bukan** alat pemindai kerentanan, eksploitasi, atau otomasi serangan
 | Catatan | Catatan tim dan pribadi berbasis Markdown, templat, pratinjau aman, versi dan deteksi konflik versi |
 | Operasional | Dasbor, log audit, pustaka templat temuan, impor CSV |
 
+**Keputusan versi CVSS:** implementasi saat ini secara eksplisit memvalidasi prefiks `CVSS:3.1` dan menghitung Base Score CVSS v3.1 dalam fungsi terpisah di `backend/app/cvss.py`; endpoint kalkulasi `POST /api/cvss/calc` dan pembuatan/perubahan temuan memakai fungsi tersebut. Karena itu dokumen *as-built* harus menyebut v3.1, bukan mengklaim v4.0. Alasan mempertahankan v3.1 untuk baseline ini adalah kesesuaian langsung dengan format vektor, rumus, severity mapping, data uji, dan laporan yang sudah diimplementasikan. CVSS v4.0 adalah kandidat peningkatan terencana; migrasi memerlukan parser, rumus, skema input, UI, fixture/test pembanding, dan label versi di laporan yang konsisten. Jangan mengganti label versi menjadi 4.0 hanya pada dokumen.
+
 Rincian implementasi dapat dilacak pada backend/app/models.py, backend/app/routers/, backend/app/reporting.py, backend/app/notes_service.py, dan pengujian terkait.
 
 ## 2. Alur bisnis aktual
@@ -43,6 +45,9 @@ Perubahan scope/RoE setelah disetujui adalah perubahan kontrol penting: persetuj
 
 ## 3. Role dan batas akses
 
+Lima role pada source adalah role aplikasi yang benar-benar diberlakukan oleh backend. Istilah organisasi pada rancangan Bilal dapat dipakai sebagai label/tanggung jawab proyek, tetapi jangan mengubah nama role di dokumen tanpa menyelaraskan matriks izin dan kode. Pemetaan kerja yang paling dekat adalah: Admin System → Admin; Project Management → Lead; Engineer-Red Team → Tester/Penguji; Engineer-Lead of Technical Writer → Technical Writer; Engineer-Head Offensive Security → Reviewer hanya jika tanggung jawab utamanya adalah quality gate/review. Pemetaan terakhir ini adalah usulan interpretasi, bukan nama role atau struktur organisasi yang sudah dibuktikan oleh kode. Jika Head Offensive Security perlu kewenangan mengelola engagement, peran Reviewer tidak ekuivalen dengan Lead dan matriks izin harus diputuskan ulang.
+
+
 | Role kode | Nama di UI/dokumen | Tanggung jawab dan batas penting |
 |---|---|---|
 | admin | Admin | Pengguna, seluruh kewenangan Lead, template laporan/catatan, audit |
@@ -54,6 +59,10 @@ Perubahan scope/RoE setelah disetujui adalah perubahan kontrol penting: persetuj
 Catatan: kode role di database adalah writer, bukan technical_writer. Istilah yang konsisten untuk dokumen dan UI adalah **Technical Writer**. Reviewer/Lead/Admin tunduk pada aturan empat mata untuk persetujuan temuan.
 
 Matriks izin rinci tetap berada di [PERAN-DAN-IZIN.md](PERAN-DAN-IZIN.md).
+
+### Dasbor dan kontrol akses
+
+Route dasbor tersedia untuk kelima role. Dokumen kebutuhan boleh menetapkan FR dasbor sebagai Must karena merupakan kebutuhan produk, tetapi kriteria penerimaannya perlu memeriksa bukan hanya respons 401/403, melainkan juga bahwa data/aksi yang ditampilkan mengikuti role dan keanggotaan engagement. Matriks rinci ada di [PERAN-DAN-IZIN.md](PERAN-DAN-IZIN.md).
 
 ## 4. Arsitektur dan teknologi aktual
 
