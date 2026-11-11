@@ -1,6 +1,6 @@
 # Matriks peran dan izin (v1.1)
 
-✅ boleh · — tidak boleh · 🔸 dengan syarat (lihat catatan). "Ditugaskan" = menjadi anggota engagement tersebut.
+✅ boleh · — tidak boleh · 🔸 dengan syarat (lihat catatan). "Ditugaskan" = menjadi anggota engagement tersebut.\n\n**Pemetaan nama jabatan organisasi untuk dokumen proyek:** Admin System = Admin; Project Management = Lead; Engineer-Head Offensive Security = Peninjau (Reviewer); Engineer-Lead of Technical Writer = Technical Writer; Engineer-Red Team = Penguji (Tester). Pemetaan ini hanya menyelaraskan nomenklatur. Hak akses tetap mengikuti kolom matriks dan kode role aplikasi. Khususnya, Peninjau tidak memperoleh hak pengelolaan engagement/anggota/RoE milik Lead.
 
 | Kemampuan | Admin | Lead | Penguji | Peninjau | Tech. Writer |
 |---|---|---|---|---|---|
