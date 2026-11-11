@@ -6,14 +6,17 @@ const ROLE = {admin: 'Admin', lead: 'Lead', tester: 'Penguji', reviewer: 'Peninj
 const CVSS_METRICS = [
   ['AV', 'Attack Vector', {N: 'Network', A: 'Adjacent', L: 'Local', P: 'Physical'}],
   ['AC', 'Attack Complexity', {L: 'Low', H: 'High'}],
+  ['AT', 'Attack Requirements', {N: 'None', P: 'Present'}],
   ['PR', 'Privileges Required', {N: 'None', L: 'Low', H: 'High'}],
-  ['UI', 'User Interaction', {N: 'None', R: 'Required'}],
-  ['S', 'Scope', {U: 'Unchanged', C: 'Changed'}],
-  ['C', 'Confidentiality', {N: 'None', L: 'Low', H: 'High'}],
-  ['I', 'Integrity', {N: 'None', L: 'Low', H: 'High'}],
-  ['A', 'Availability', {N: 'None', L: 'Low', H: 'High'}],
+  ['UI', 'User Interaction', {N: 'None', P: 'Passive', A: 'Active'}],
+  ['VC', 'Vulnerable System Confidentiality', {H: 'High', L: 'Low', N: 'None'}],
+  ['VI', 'Vulnerable System Integrity', {H: 'High', L: 'Low', N: 'None'}],
+  ['VA', 'Vulnerable System Availability', {H: 'High', L: 'Low', N: 'None'}],
+  ['SC', 'Subsequent System Confidentiality', {H: 'High', L: 'Low', N: 'None'}],
+  ['SI', 'Subsequent System Integrity', {H: 'High', L: 'Low', N: 'None'}],
+  ['SA', 'Subsequent System Availability', {H: 'High', L: 'Low', N: 'None'}],
 ];
-const DEFAULT_VECTOR = 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N';
+const DEFAULT_VECTOR = 'CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:N/SC:N/SI:N/SA:N';
 const state = {token: sessionStorage.getItem('scopeline_token'), user: null};
 const $app = document.getElementById('app');
 
@@ -196,9 +199,9 @@ async function viewEngagement(id) {
       h('div', {class: 'actions'},
         canWrite() && h('button', {disabled: e.status !== 'active', onclick: () => { location.hash = `#/engagements/${id}/findings/new`; }}, '+ Temuan'),
         null)),
-      findings.length ? h('table', {}, h('thead', {}, h('tr', {}, ['ID', 'Judul', 'CVSS', 'Keparahan', 'Review', 'Status', 'Tenggat'].map(t => h('th', {}, t)))),
+      findings.length ? h('table', {}, h('thead', {}, h('tr', {}, ['ID', 'Judul', 'CVSS (versi)', 'Keparahan', 'Review', 'Status', 'Tenggat'].map(t => h('th', {}, t)))),
         h('tbody', {}, findings.map(f => h('tr', {class: 'link', onclick: () => { location.hash = '#/findings/' + f.id; }},
-          h('td', {}, f.code), h('td', {}, f.title), h('td', {}, f.cvss_score), h('td', {}, sevBadge(f.severity)),
+          h('td', {}, f.code), h('td', {}, f.title), h('td', {}, f.cvss_score + ' (v' + f.cvss_version + ')'), h('td', {}, sevBadge(f.severity)),
           h('td', {}, h('span', {class: 'badge ' + f.review_status}, REVIEW[f.review_status])),
           h('td', {}, h('span', {class: 'badge ' + f.status}, FSTAT[f.status])), h('td', {}, fmtDate(f.due_date)))))) : h('p', {class: 'muted'}, 'Belum ada temuan.'),
       canWrite() && e.status === 'active' && h('div', {class: 'actions'}, h('label', {}, 'Impor CSV (title, description, impact, recommendation, cvss_vector):'), fileCsv,
@@ -213,11 +216,13 @@ async function viewEngagement(id) {
 
 // ---------- temuan ----------
 function cvssEditor(initial, onChange) {
-  const m = {}; (initial || DEFAULT_VECTOR).split('/').slice(1).forEach(p => { const [k, v] = p.split(':'); m[k] = v; });
+  const m = {}, baseKeys = new Set(CVSS_METRICS.map(([k]) => k));
+  (initial || DEFAULT_VECTOR).split('/').slice(1).forEach(p => { const [k, v] = p.split(':'); m[k] = v; });
+  let extras = Object.entries(m).filter(([k]) => !baseKeys.has(k));
   const out = h('span', {class: 'score'}, '–'), sev = h('span', {}), vec = h('code', {});
   const selects = {};
-  const vector = () => 'CVSS:3.1/' + CVSS_METRICS.map(([k]) => `${k}:${selects[k].value}`).join('/');
-  let seq = 0;  // abaikan respons usang bila metrik diubah beruntun (respons bisa tiba tidak berurutan)
+  const vector = () => 'CVSS:4.0/' + CVSS_METRICS.map(([k]) => `${k}:${selects[k].value}`).join('/') + extras.map(([k, v]) => `/${k}:${v}`).join('');
+  let seq = 0;
   const recalc = async () => {
     const v = vector(), mine = ++seq; vec.textContent = v;
     try {
@@ -227,10 +232,22 @@ function cvssEditor(initial, onChange) {
     } catch (_) { if (mine === seq) out.textContent = '?'; }
     onChange && onChange(v);
   };
-  const grid = CVSS_METRICS.map(([k, label, o]) => { selects[k] = h('select', {onchange: recalc}, opts(o, m[k] || Object.keys(o)[0])); return field(label, selects[k]); });
-  const root = h('div', {}, h('div', {class: 'row'}, grid), h('div', {class: 'between'}, h('div', {}, out, ' ', sev), vec));
+  const grid = CVSS_METRICS.map(([k, label, o]) => {
+    selects[k] = h('select', {onchange: recalc}, opts(o, m[k] || Object.keys(o)[0]));
+    return field(label, selects[k]);
+  });
+  const root = h('div', {}, h('div', {class: 'row'}, grid),
+    extras.length ? h('p', {class: 'muted'}, 'Metrik Threat/Environmental yang sudah ada dipertahankan pada vector; pengeditan metrik opsional dilakukan melalui vector/API.') : null,
+    h('div', {class: 'between'}, h('div', {}, out, ' ', sev), vec));
+  const setVector = value => {
+    const parsed = {};
+    (value || DEFAULT_VECTOR).split('/').slice(1).forEach(p => { const [k, v] = p.split(':'); parsed[k] = v; });
+    extras = Object.entries(parsed).filter(([k]) => !baseKeys.has(k));
+    CVSS_METRICS.forEach(([k]) => { if (parsed[k]) selects[k].value = parsed[k]; });
+    recalc();
+  };
   recalc();
-  return {root, vector};
+  return {root, vector, setVector};
 }
 async function viewFinding(fid, eid) {
   const [f, tpls] = await Promise.all([fid ? api('/findings/' + fid) : Promise.resolve(null), api('/finding-templates')]);
@@ -247,22 +264,40 @@ async function viewFinding(fid, eid) {
   const imp = h('textarea', {id: 'f-impact', value: f ? f.impact : '', readonly: !textEdit});
   const rec = h('textarea', {id: 'f-rec', value: f ? f.recommendation : '', readonly: !textEdit});
   const due = h('input', {type: 'date', id: 'f-due', value: f && f.due_date ? f.due_date : '', disabled: !fullEdit});
-  const cv = cvssEditor(f ? f.cvss_vector : null);
+  const legacyCvss = !!f && f.cvss_version !== '4.0';
+  let reassessLegacy = !legacyCvss;
+  const cv = cvssEditor(f && !legacyCvss ? f.cvss_vector : null);
+  const legacyBlock = legacyCvss ? h('div', {class: 'card'},
+    h('b', {}, 'Penilaian historis CVSS v3.1 — tidak diubah otomatis'),
+    h('p', {}, 'Skor: ' + f.cvss_score + ' (' + (SEV[f.severity] || f.severity) + ')'),
+    h('code', {}, f.cvss_vector),
+    fullEdit && h('button', {class: 'sec', onclick: () => {
+      reassessLegacy = true; cv.root.hidden = false;
+      toast('Isi metrik CVSS v4.0, lalu simpan untuk menambahkan penilaian baru. Skor historis v3.1 akan tetap tersimpan.');
+    }}, 'Nilai ulang dengan CVSS v4.0')) : null;
+  if (legacyCvss) cv.root.hidden = true;
   if (!fullEdit) cv.root.querySelectorAll('select').forEach(s => { s.disabled = true; });
   const tplSel = h('select', {onchange: () => {
     const t = tpls.find(x => String(x.id) === tplSel.value); if (!t) return;
     title.value = t.title; desc.value = t.description; imp.value = t.impact; rec.value = t.recommendation;
-  }}, h('option', {value: ''}, '— pilih templat —'), tpls.map(t => h('option', {value: t.id}, t.title)));
+    if (t.cvss_version === '4.0') cv.setVector(t.cvss_vector);
+    else toast('Template ini memakai CVSS v3.1; vector lama tidak diterapkan ke kalkulator v4.0. Lakukan penilaian ulang.');
+  }}, h('option', {value: ''}, '— pilih templat —'), tpls.map(t => h('option', {value: t.id}, t.title + (t.cvss_version === '4.0' ? '' : ' (CVSS v3.1)'))));
   const body = () => {
     const b = {title: title.value, description: desc.value, impact: imp.value, recommendation: rec.value};
-    if (fullEdit) { b.cvss_vector = cv.vector(); b.due_date = due.value || null; }  // Writer: hanya teks
+    if (fullEdit) {
+      if (!legacyCvss || reassessLegacy) b.cvss_vector = cv.vector();
+      b.due_date = due.value || null;
+    }
     return b;
   };
   const parts = [h('div', {class: 'between'}, h('h1', {}, f ? `${f.code} — ${f.title}` : 'Temuan baru'), h('button', {class: 'sec', onclick: back}, '← Kembali')),
     !f && fullEdit && h('div', {class: 'card'}, field('Pustaka templat temuan umum', tplSel)),
     h('div', {class: 'card'}, role === 'writer' && h('p', {class: 'muted'}, 'Sebagai Technical Writer Anda dapat menyunting teks temuan (judul, deskripsi, dampak, rekomendasi). CVSS, tenggat, status, dan bukti dikelola penguji.'),
       field('Judul', title), field('Deskripsi', desc), field('Dampak', imp), field('Rekomendasi', rec),
-      field('Tenggat perbaikan', due), h('h2', {}, 'Penilaian CVSS v3.1'), cv.root,
+      field('Tenggat perbaikan', due),
+      f && f.cvss_legacy_vector && h('p', {class: 'muted'}, 'Riwayat ' + f.cvss_legacy_version + ': ' + f.cvss_legacy_score + ' (' + (SEV[f.cvss_legacy_severity] || f.cvss_legacy_severity) + ') — ' + f.cvss_legacy_vector),
+      legacyBlock, h('h2', {}, 'Penilaian CVSS v4.0 (CVSS-B)'), cv.root,
       textEdit && h('div', {class: 'actions'}, h('button', {id: 'f-save', onclick: act(async () => {
         if (f) { await api('/findings/' + fid, {method: 'PATCH', body: body()}); toast('Temuan disimpan'); reload(); }
         else { const r = await api(`/engagements/${eid}/findings`, {method: 'POST', body: body()}); toast('Temuan dibuat'); location.hash = '#/findings/' + r.id; }
