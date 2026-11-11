@@ -308,4 +308,11 @@ def test_legacy_cvss_history_survives_v4_reassessment(client, tokens, eng):
     assert out["cvss_legacy_score"] == 9.8
     assert out["cvss_legacy_vector"].startswith("CVSS:3.1/")
     assert out["cvss_score"] == 9.9
+    report = client.get(f"/api/engagements/{eng}/report?include_unapproved=true", headers=tokens["tester"])
+    from docx import Document
+    doc = Document(io.BytesIO(report.content))
+    report_text = "\\n".join(p.text for p in doc.paragraphs) + " " + " ".join(
+        cell.text for table in doc.tables for row in table.rows for cell in row.cells)
+    assert "Riwayat CVSS v3.1" in report_text
+    assert out["cvss_legacy_vector"] in report_text
     assert out["cvss_legacy_severity"] == "critical"
