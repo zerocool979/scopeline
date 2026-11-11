@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with: {python-version: "3.12", cache: pip, cache-dependency-path: backend/requirements-dev.txt}
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: {node-version: "22"}
       - run: pip install -r backend/requirements-dev.txt
       - run: cd e2e && npm install --no-audit --no-fund && npm test
