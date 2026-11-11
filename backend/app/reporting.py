@@ -161,11 +161,18 @@ def _evidence_block(doc, items, evidence_dir: Path, title: str = "Bukti"):
 
 def _finding_detail(doc, f: dict, evidence_dir: Path, *, show_review: bool, with_retests: bool):
     _heading(doc, f"{f['code']} [{SEV_LABEL[f['severity']]}] {f['title']}", 2)
-    meta = [("CVSS v3.1", f"{f['cvss_score']} ({SEV_LABEL[f['severity']]})"), ("Vektor", f["cvss_vector"]),
+    cvss_label = "CVSS-B v4.0" if f.get("cvss_version") == "4.0" else "CVSS v3.1 (historis)"
+    meta = [(cvss_label, f"{f['cvss_score']} ({SEV_LABEL[f['severity']]})"), ("Vektor", f["cvss_vector"]),
             ("Status", STATUS_LABEL.get(f["status"], f["status"])),
             ("Tenggat perbaikan", str(f["due_date"] or "-"))]
     if show_review:
         meta.append(("Status review", REVIEW_LABEL.get(f["review_status"], f["review_status"])))
+    if f.get("cvss_legacy_vector"):
+        meta.extend([
+            (f"Riwayat {f.get('cvss_legacy_version') or 'CVSS v3.1'}",
+             f"{f.get('cvss_legacy_score')} ({SEV_LABEL.get(f.get('cvss_legacy_severity'), f.get('cvss_legacy_severity'))})"),
+            ("Vektor historis", f["cvss_legacy_vector"]),
+        ])
     _kv_table(doc, meta)
     for label, key in (("Deskripsi", "description"), ("Dampak", "impact"), ("Rekomendasi", "recommendation")):
         doc.add_paragraph().add_run(label).bold = True
