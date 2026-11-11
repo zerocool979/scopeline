@@ -138,7 +138,7 @@ async function step(name, fn) {
     s.set(s.q('#f-impact'), 'Pengambilalihan akun'); s.set(s.q('#f-rec'), 'Gunakan parameterized query');
     const selects = s.qa('select', s.q('#f-title').closest('.card'));
     assert.equal(selects.length, 11, '11 Base metrics CVSS v4.0');
-    for (const i of [5, 6, 7]) s.set(selects[i], 'H');
+    for (const i of [5, 6, 7, 8, 9]) s.set(selects[i], 'H');
     await waitFor(() => s.q('.score')?.textContent === '9.9', 'skor CVSS 9.9');
     await s.click('Simpan'); await waitFor(() => s.q('h1')?.textContent.startsWith('F-001'), 'halaman temuan');
     ctx.findingHash = s.win.location.hash;
