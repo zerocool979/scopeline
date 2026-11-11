@@ -10,8 +10,8 @@
 
 | Area | Status | Bukti / batas klaim |
 |---|---|---|
-| CVSS v4.0 | <badge> merged ke main | PR #9, merge commit `bca1d52479aa7537df025c4a3dc84d2807453705` |
-| CI branch PR #9 | <badge> success | Run [43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984) |
+| CVSS v4.0 | Merged ke main | PR #9, merge commit `bca1d52479aa7537df025c4a3dc84d2807453705` |
+| CI branch PR #9 | Success | Run [43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984) |
 | CI untuk dokumentasi commit terbaru | Belum diverifikasi | Jangan disimpulkan dari CI PR #9 |
 | Vercel Git integration | Terhubung | Project `scopeline`, repo `zerocool979/scopeline`, branch `main` |
 | Deployment Production terakhir yang sudah READY saat pemeriksaan | READY | Commit `f2bc363779888d88c134c49787c2b74427bcc942`, deployment `dpl_7KXgGKFhkrEBa8QBTXDqD5ZbdnCV` |
