@@ -1,0 +1,50 @@
+name: Build PA and PM documents
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/PROGRAM-ANALYSIS-DESIGN.md"
+      - "docs/PROJECT-MANAGEMENT-PLAN.md"
+      - ".github/workflows/build-project-documents.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-docx:
+    name: Generate DOCX deliverables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes pandoc
+
+      - name: Generate Word documents
+        run: |
+          mkdir -p dist
+          pandoc docs/PROGRAM-ANALYSIS-DESIGN.md \
+            --from=gfm --to=docx --toc --number-sections \
+            --metadata=lang:id-ID \
+            --metadata="title=SCOPELINE - Program Analysis dan Perancangan Sistem" \
+            --output=dist/SCOPELINE_Program_Analysis_v1.1.docx
+          pandoc docs/PROJECT-MANAGEMENT-PLAN.md \
+            --from=gfm --to=docx --toc --number-sections \
+            --metadata=lang:id-ID \
+            --metadata="title=SCOPELINE - Project Management Plan" \
+            --output=dist/SCOPELINE_Project_Management_Plan_v1.1.docx
+          test -s dist/SCOPELINE_Program_Analysis_v1.1.docx
+          test -s dist/SCOPELINE_Project_Management_Plan_v1.1.docx
+
+      - name: Upload DOCX deliverables
+        uses: actions/upload-artifact@v4
+        with:
+          name: SCOPELINE-PA-PM-DOCX
+          path: dist/*.docx
+          if-no-files-found: error
+          retention-days: 30
