@@ -31,11 +31,15 @@ jobs:
           pandoc docs/PROGRAM-ANALYSIS-DESIGN.md \
             --from=gfm --to=docx --toc --number-sections \
             --metadata=lang:id-ID \
+            --metadata="author=Denvi Sekartazi Iskandar (241552010020)" \
+            --metadata="date=11 November 2026" \
             --metadata="title=SCOPELINE - Program Analysis dan Perancangan Sistem" \
             --output=dist/SCOPELINE_Program_Analysis_v1.1.docx
           pandoc docs/PROJECT-MANAGEMENT-PLAN.md \
             --from=gfm --to=docx --toc --number-sections \
             --metadata=lang:id-ID \
+            --metadata="author=Bilal (241552010004)" \
+            --metadata="date=11 November 2026" \
             --metadata="title=SCOPELINE - Project Management Plan" \
             --output=dist/SCOPELINE_Project_Management_Plan_v1.1.docx
           test -s dist/SCOPELINE_Program_Analysis_v1.1.docx
