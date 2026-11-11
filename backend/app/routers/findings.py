@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from .. import audit
 from ..config import settings
-from ..cvss import CvssError, calculate, normalize_vector
+from ..cvss import CvssError, calculate, nomenclature, normalize_vector
 from ..database import get_db
 from ..deps import AUTHORS, REVIEWERS, STAFF, TEXT_EDITORS, WRITERS, current_user, load_engagement, require_roles
 from ..models import AuditLog, Engagement, Evidence, Finding, FindingTemplate, Retest, User
@@ -109,8 +109,8 @@ def _create_finding(db: Session, e: Engagement, user: User, data: FindingIn) -> 
 @router.post("/cvss/calc")
 def cvss_calc(data: CvssIn, _: User = Depends(current_user)):
     score, sev = _score(data.vector)
-    return {"vector": normalize_vector(data.vector), "version": "4.0", "nomenclature": "CVSS-B",
-            "score": score, "severity": sev}
+    return {"vector": normalize_vector(data.vector), "version": "4.0",
+            "nomenclature": nomenclature(data.vector), "score": score, "severity": sev}
 
 
 @router.get("/engagements/{eid}/findings")
