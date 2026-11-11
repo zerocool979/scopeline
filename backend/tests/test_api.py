@@ -118,6 +118,10 @@ def test_findings_lifecycle(client, tokens, eng):
     assert f["cvss_score"] == 9.9 and f["severity"] == "critical" and f["cvss_version"] == "4.0"
     assert f["code"].startswith("F-")
     assert f["cvss_vector"].startswith("CVSS:4.0/")
+    template = client.post("/api/finding-templates", headers=tokens["lead"], json=FIND)
+    assert template.status_code == 201
+    saved_template = next(x for x in client.get("/api/finding-templates", headers=t).json() if x["id"] == template.json()["id"])
+    assert saved_template["cvss_version"] == "4.0" and saved_template["cvss_vector"].startswith("CVSS:4.0/")
     calc = client.post("/api/cvss/calc", headers=t, json={"vector": VEC}).json()
     assert calc["version"] == "4.0" and calc["nomenclature"] == "CVSS-B" and calc["score"] == 9.9
     report = client.get(f"/api/engagements/{eng}/report?include_unapproved=true", headers=t)
