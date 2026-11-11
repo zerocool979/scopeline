@@ -137,9 +137,9 @@ async function step(name, fn) {
     s.set(s.q('#f-title'), 'SQL Injection pada login'); s.set(s.q('#f-desc'), 'Parameter username tidak disanitasi');
     s.set(s.q('#f-impact'), 'Pengambilalihan akun'); s.set(s.q('#f-rec'), 'Gunakan parameterized query');
     const selects = s.qa('select', s.q('#f-title').closest('.card'));
-    assert.equal(selects.length, 8, '8 metrik CVSS');
+    assert.equal(selects.length, 11, '11 Base metrics CVSS v4.0');
     for (const i of [5, 6, 7]) s.set(selects[i], 'H');
-    await waitFor(() => s.q('.score')?.textContent === '9.8', 'skor CVSS 9.8');
+    await waitFor(() => s.q('.score')?.textContent === '9.9', 'skor CVSS 9.9');
     await s.click('Simpan'); await waitFor(() => s.q('h1')?.textContent.startsWith('F-001'), 'halaman temuan');
     ctx.findingHash = s.win.location.hash;
     assert.equal(s.q('#review-badge').textContent, 'Draf');
@@ -232,7 +232,7 @@ async function step(name, fn) {
     const tok = (await api('/auth/login', {method: 'POST', body: {username: 'tester', password: PW}})).access_token;
     const eid = ctx.engHash.split('/').pop();
     await api(`/engagements/${eid}/findings`, {method: 'POST', token: tok, body: {
-      title: '<img src=x onerror="window.__pwned=3">', cvss_vector: 'CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N'}});
+      title: '<img src=x onerror="window.__pwned=3">', cvss_vector: 'CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:L/VI:N/VA:N/SC:N/SI:N/SA:N'}});
     const s = ctx.tester; s.win.__pwned = undefined; s.go('#/'); await s.see('Dasbor'); s.go(ctx.engHash);
     await s.see('<img src=x onerror=');
     assert.equal(s.qa('table img').length, 0); assert.equal(s.win.__pwned, undefined);
