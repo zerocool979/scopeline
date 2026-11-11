@@ -1,8 +1,19 @@
 # SCOPELINE
 
-Platform manajemen engagement dan pelaporan penetration testing berbasis web (STMIK Tazkia).
+[![CI](https://github.com/zerocool979/scopeline/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/zerocool979/scopeline/actions/workflows/ci.yml) [![License: not specified](https://img.shields.io/badge/license-not%20specified-lightgrey.svg)](#license)
+
+> Platform manajemen engagement dan pelaporan penetration testing berbasis web.
+
+
+**Proyek akademik — STMIK Tazkia**  
+Status implementasi: CVSS v4.0 sudah digabung ke `main`; verifikasi CI pada commit merge sedang berjalan.
 
 **SCOPELINE adalah sistem manajemen dan dokumentasi**, bukan vulnerability scanner, exploit framework, atau alat otomasi serangan. Seluruh data demo/pengujian harus fiktif atau digunakan dengan izin tertulis.
+
+## Navigasi proyek
+
+- [Rencana Manajemen Proyek](docs/PROJECT-MANAGEMENT-PLAN.md) — charter, ruang lingkup, jadwal baseline, stakeholder, RACI, risiko, mutu, dan penerimaan.
+- [Panduan kontribusi](CONTRIBUTING.md) · [Kebijakan keamanan](SECURITY.md) · [Changelog](CHANGELOG.md).
 
 ## Dokumen acuan
 
@@ -77,7 +88,7 @@ Aplikasi menolak startup jika konfigurasi wajib untuk lingkungan Vercel tidak te
 
 Alias produksi: https://scopeline-six.vercel.app
 
-Deployment Production terbaru yang diperiksa berstatus **READY** pada commit f49736200295fc33e63030d178dfb85e35bbd25c. GitHub Actions CI pada commit yang sama lulus, termasuk coverage gate 70%, PostgreSQL tests, E2E, dan Docker build. Namun, status deployment READY bukan bukti health check atau acceptance test runtime telah lulus. Lihat [docs/DEPLOYMENT-STATUS.md](docs/DEPLOYMENT-STATUS.md) untuk batas klaim dan langkah verifikasi.
+CVSS v4.0 telah digabung ke `main` melalui PR #9 (merge commit `bca1d52479aa7537df025c4a3dc84d2807453705`). CI untuk commit merge sedang berjalan saat dokumen ini diperbarui; CI pada branch PR telah lulus seluruh job. Status deployment Production pasca-merge dan acceptance test runtime belum diverifikasi. Lihat [docs/DEPLOYMENT-STATUS.md](docs/DEPLOYMENT-STATUS.md) untuk status terbaru dan batas klaim.
 
 ## Batasan yang diketahui
 
@@ -94,3 +105,12 @@ Deployment Production terbaru yang diperiksa berstatus **READY** pada commit f49
 Kalkulator aktif menggunakan CVSS v4.0 (CVSS-B) melalui pustaka Python `cvss` 3.6 yang mendukung CVSS4. Vektor wajib menyertakan 11 Base metrics sesuai urutan FIRST; metrik Threat/Environmental/Supplemental opsional yang disediakan dipertahankan dan diproses kalkulator. Skor ditampilkan bersama vector dan nomenklatur yang mencerminkan kelompok metrik yang digunakan.
 
 Migrasi database menandai temuan lama sebagai CVSS v3.1 tanpa menghitung ulang skor. Saat temuan lama dinilai ulang, vector/score/severity v3.1 disalin ke kolom riwayat sebelum nilai aktif diganti v4.0. Laporan DOCX menampilkan versi dan vector yang sesuai. Sumber: [FIRST CVSS v4.0 Specification](https://www.first.org/cvss/v4.0/specification-document).
+
+
+## License
+
+Lisensi repository belum ditetapkan. Sampai file `LICENSE` ditambahkan oleh pemilik proyek, jangan mengasumsikan kode ini tersedia di bawah lisensi open-source tertentu.
+
+## Kontribusi dan keamanan
+
+Baca [CONTRIBUTING.md](CONTRIBUTING.md) sebelum mengajukan perubahan. Untuk pelaporan kerentanan, ikuti [SECURITY.md](SECURITY.md); jangan memublikasikan detail eksploit atau data sensitif pada issue publik.
