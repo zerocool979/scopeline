@@ -175,9 +175,9 @@ def _finding_detail(doc, f: dict, evidence_dir: Path, *, show_review: bool, with
     if f.get("cvss_legacy_vector"):
         legacy_severity = f.get("cvss_legacy_severity")
         legacy_label = SEV_LABEL.get(legacy_severity, legacy_severity)
-        legacy_version = f.get("cvss_legacy_version") or "CVSS v3.1"
+        legacy_version = f.get("cvss_legacy_version") or "3.1"
         meta.extend([
-            (f"Riwayat {legacy_version}", f"{f.get('cvss_legacy_score')} ({legacy_label})"),
+            (f"Riwayat CVSS v{legacy_version}", f"{f.get('cvss_legacy_score')} ({legacy_label})"),
             ("Vektor historis", f["cvss_legacy_vector"]),
         ])
     _kv_table(doc, meta)
