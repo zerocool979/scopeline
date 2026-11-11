@@ -9,9 +9,9 @@ from datetime import date
 from pathlib import Path
 
 from docx import Document
+from docx.shared import Inches, Pt
 
 from .cvss import nomenclature
-from docx.shared import Inches, Pt
 
 log = logging.getLogger("scopeline.report")
 SEV_LABEL = {"critical": "Kritis", "high": "Tinggi", "medium": "Sedang", "low": "Rendah", "none": "Informasional"}
@@ -163,7 +163,10 @@ def _evidence_block(doc, items, evidence_dir: Path, title: str = "Bukti"):
 
 def _finding_detail(doc, f: dict, evidence_dir: Path, *, show_review: bool, with_retests: bool):
     _heading(doc, f"{f['code']} [{SEV_LABEL[f['severity']]}] {f['title']}", 2)
-    cvss_label = (nomenclature(f["cvss_vector"]) + " v4.0") if f.get("cvss_version") == "4.0" else "CVSS v3.1 (historis)"
+    if f.get("cvss_version") == "4.0":
+        cvss_label = nomenclature(f["cvss_vector"]) + " v4.0"
+    else:
+        cvss_label = "CVSS v3.1 (historis)"
     meta = [(cvss_label, f"{f['cvss_score']} ({SEV_LABEL[f['severity']]})"), ("Vektor", f["cvss_vector"]),
             ("Status", STATUS_LABEL.get(f["status"], f["status"])),
             ("Tenggat perbaikan", str(f["due_date"] or "-"))]
