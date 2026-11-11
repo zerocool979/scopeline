@@ -1,6 +1,6 @@
 # Baseline Realitas Proyek SCOPELINE (berdasarkan source code)
 
-**Versi acuan:** branch main, commit f49736200295fc33e63030d178dfb85e35bbd25c (11 November 2026).  
+**Versi acuan:** branch `feature/cvss-v4-migration`, setelah implementasi CVSS v4.0; temuan lama v3.1 dipertahankan sebagai histori.  
 **Sumber utama:** implementasi pada backend/app/, backend/tests/, e2e/, konfigurasi deployment, serta hasil CI. README dan dokumen analisis lama bukan pengganti pemeriksaan source code.
 
 ## 1. Definisi produk dan batas lingkup
