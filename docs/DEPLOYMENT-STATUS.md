@@ -2,14 +2,14 @@
 
 **Pemeriksaan terakhir:** 11 November 2026  
 **Repository branch:** main  
-**Commit yang diperiksa:** f49736200295fc33e63030d178dfb85e35bbd25c
+**Commit yang diperiksa:** bca1d52479aa7537df025c4a3dc84d2807453705 (merge CVSS v4.0)
 
 ## Ringkasan status
 
 | Area | Status | Dasar bukti |
 |---|---|---|
-| Source code v1.1 | Tersedia | Branch main, commit di atas |
-| GitHub Actions CI | Lulus | Run #59, conclusion success, 11 Nov 2026 |
+| Source code | Tersedia | Branch main, merge commit di atas; kalkulator aktif CVSS v4.0 |
+| GitHub Actions CI untuk merge commit | Berjalan saat pemeriksaan | [Run 43034551071](https://github.com/zerocool979/scopeline/actions/runs/43034551071); CI branch PR #9 seluruh job lulus |
 | Vercel Production deployment | READY | Deployment scopeline-gs24s7r06-zerocool979s-projects.vercel.app |
 | Alias produksi | Terpasang | https://scopeline-six.vercel.app |
 | PostgreSQL Production env | Terkonfigurasi | DATABASE_URL terdaftar pada environment Production |
@@ -21,15 +21,15 @@
 
 - Repository: https://github.com/zerocool979/scopeline
 - Branch Production: main
-- Commit: f49736200295fc33e63030d178dfb85e35bbd25c
-- Commit message: chore(ci): bump actions/setup-node to v7
+- Commit: bca1d52479aa7537df025c4a3dc84d2807453705
+- Commit message: feat: adopt CVSS v4.0 with v3.1 history
+- CVSS v4.0 migration merged via [PR #9](https://github.com/zerocool979/scopeline/pull/9).
 
 ## GitHub Actions
 
 - Workflow: [CI](https://github.com/zerocool979/scopeline/actions)
-- Run terbaru yang diperiksa: [Run #59](https://github.com/zerocool979/scopeline/actions/runs/42992002978)
-- Status: **completed / success**
-- Waktu: 11 November 2026, 09:03:49–09:05:57 UTC.
+- CI branch PR #9: [run 43030825984](https://github.com/zerocool979/scopeline/actions/runs/43030825984), **completed / success**, termasuk SQLite, PostgreSQL, E2E, security checks, coverage gate, dan Docker Compose build.
+- CI pasca-merge di `main`: [run 43034551071](https://github.com/zerocool979/scopeline/actions/runs/43034551071), **in progress pada pemeriksaan terakhir**. Jangan menganggap hasil pasca-merge lulus sampai run ini selesai.
 
 Workflow pada commit tersebut menjalankan:
 1. Ruff lint.
@@ -50,7 +50,7 @@ Kesimpulan: gerbang CI pada commit tersebut lulus. Ini bukan pengganti verifikas
 - Framework: FastAPI
 - Repository: zerocool979/scopeline
 - Branch: main
-- Commit: f49736200295fc33e63030d178dfb85e35bbd25c
+- Commit deployment terakhir yang telah diverifikasi sebelumnya: f49736200295fc33e63030d178dfb85e35bbd25c (deployment pasca-merge belum diverifikasi)
 - Deployment ID: dpl_6bTYboJCq8Xcg3BRrLk3GoZGRn2g
 - Deployment URL: https://scopeline-gs24s7r06-zerocool979s-projects.vercel.app
 - Alias: https://scopeline-six.vercel.app
@@ -111,4 +111,4 @@ Catatan sebelumnya menyebut DATABASE_URL belum tersedia dan PostgreSQL belum ter
 
 ## Kesimpulan
 
-SCOPELINE telah memiliki source v1.1, CI yang lulus pada commit Production, environment PostgreSQL Production yang terkonfigurasi, dan deployment Vercel berstatus READY. Status yang akurat adalah **ter-deploy/build-ready, runtime acceptance belum diverifikasi dalam pemeriksaan ini**. Jangan menggunakan istilah “seluruh sistem telah teruji di produksi” atau “production-ready” sebelum checklist verifikasi di atas dilengkapi bukti.
+CVSS v4.0 sudah masuk ke branch `main`. CI pada branch PR lulus, sedangkan CI pasca-merge perlu ditunggu hingga selesai. Deployment Vercel READY yang tercatat di atas berasal dari commit sebelumnya; deployment pasca-merge dan runtime acceptance belum diverifikasi. Status akurat: **CVSS v4.0 merged; build/deployment pasca-merge menunggu verifikasi; runtime acceptance belum diverifikasi**.
