@@ -9,7 +9,9 @@
 
 ---
 
-Dokumen analisis teknis terkait: [Program Analysis & System Design](PROGRAM-ANALYSIS-DESIGN.md). Status deployment dan batas klaim: [Deployment Status](DEPLOYMENT-STATUS.md).\n\n## 1. Ringkasan eksekutif
+Dokumen analisis teknis terkait: [Program Analysis & System Design](PROGRAM-ANALYSIS-DESIGN.md). Status deployment dan batas klaim: [Deployment Status](DEPLOYMENT-STATUS.md).
+
+## 1. Ringkasan eksekutif
 
 SCOPELINE adalah aplikasi web untuk mengelola administrasi dan dokumentasi engagement penetration testing: otorisasi, scope, Rules of Engagement (RoE), anggota, temuan, bukti, penilaian risiko, review, retest, catatan teknis, dan laporan. Aplikasi mendukung proses kerja tim; SCOPELINE bukan vulnerability scanner, exploit framework, atau alat otomasi serangan.
 
