@@ -1,9 +1,9 @@
 # Rencana Manajemen Proyek SCOPELINE
 
 **Dokumen:** Project Management Plan (PMP)  
-**Versi:** 1.0  
+**Versi:** 1.1  
 **Tanggal acuan:** 11 November 2026  
-**Status:** Baseline manajemen proyek; diselaraskan dengan source code pada merge commit `bca1d52479aa7537df025c4a3dc84d2807453705`  
+**Status:** Baseline manajemen proyek; diselaraskan dengan source code dan dokumentasi pada branch `main` per 11 November 2026  
 **Produk:** Platform Manajemen Engagement dan Pelaporan Penetration Testing Berbasis Web  
 **Konteks:** Proyek akademik STMIK Tazkia
 
@@ -15,7 +15,7 @@ SCOPELINE adalah aplikasi web untuk mengelola administrasi dan dokumentasi engag
 
 Rencana awal proyek menggunakan horizon 24 minggu dalam enam sprint. Prioritas fitur memakai MoSCoW dan kapasitas perencanaan menyediakan buffer 20%. Horizon dan pembagian sprint tersebut adalah baseline proposal; tanggal aktual, velocity, dan capaian sprint perlu dikonfirmasi melalui catatan sprint/rapat, sehingga dokumen ini tidak mengarang tanggal realisasi.
 
-Pada 11 November 2026, CVSS v4.0 telah digabung ke branch `main` melalui PR #9. CI branch PR telah lulus termasuk SQLite, PostgreSQL, E2E, static security checks, dependency audit, coverage gate, dan Docker Compose build. CI pasca-merge sedang berjalan pada pemeriksaan terakhir; deployment pasca-merge dan runtime acceptance belum diverifikasi.
+Pada 11 November 2026, CVSS v4.0 telah digabung ke branch `main` melalui PR #9. CI branch PR #9 lulus pada run `43030825984`. Deployment Vercel Production yang diperiksa terakhir berstatus READY pada commit dokumentasi `f2bc363779888d88c134c49787c2b74427bcc942`; deployment otomatis mengikuti commit GitHub. Pemeriksaan error runtime 24 jam tidak menemukan error, tetapi log rinci tidak tersedia pada retensi paket Hobby. Health check dan acceptance alur bisnis production tetap harus dicatat sebelum klaim penerimaan.
 
 ## 2. Tujuan dan ukuran keberhasilan
 
@@ -154,7 +154,7 @@ R = Responsible, A = Accountable, C = Consulted, I = Informed. RACI berikut adal
 
 ### Keputusan CVSS
 
-CVSS v4.0 diputuskan sebagai kalkulator aktif dan telah diimplementasikan pada PR #9. v3.1 dipertahankan sebagai histori. Vector v4.0 dinilai oleh kalkulator server-side; pengguna memilih metrik, bukan memasukkan skor final sembarang. Rujukan normatif: [FIRST CVSS v4.0 Specification](https://www.first.org/cvss/v4.0/specification-document).
+CVSS v4.0 diputuskan sebagai kalkulator aktif dan telah diimplementasikan serta digabung ke `main` melalui PR #9. v3.1 dipertahankan sebagai histori. Vector v4.0 dinilai oleh kalkulator server-side; pengguna memilih metrik, bukan memasukkan skor final sembarang. Rujukan normatif: [FIRST CVSS v4.0 Specification](https://www.first.org/cvss/v4.0/specification-document).
 
 ## 9. Rencana mutu dan acceptance
 
