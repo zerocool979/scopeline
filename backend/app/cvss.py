@@ -32,16 +32,15 @@ def normalize_vector(vector: str) -> str:
     return CVSS4(raw).clean_vector()
 
 
-def severity_of(score: float) -> str:
-    if score == 0:
-        return "none"
-    if score < 4.0:
-        return "low"
-    if score < 7.0:
-        return "medium"
-    if score < 9.0:
-        return "high"
-    return "critical"
+
+def nomenclature(vector: str) -> str:
+    values = parse_vector(vector)
+    threat = values.get("E", "X") != "X"
+    environmental_keys = {"CR", "IR", "AR", "MAV", "MAC", "MAT", "MPR", "MUI",
+                          "MVC", "MVI", "MVA", "MSC", "MSI", "MSA"}
+    environmental = any(values.get(key, "X") != "X" for key in environmental_keys)
+    return "CVSS-BTE" if threat and environmental else (
+        "CVSS-BT" if threat else "CVSS-BE" if environmental else "CVSS-B")
 
 
 def calculate(vector: str) -> tuple[float, str]:
