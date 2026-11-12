@@ -93,7 +93,7 @@ def update_engagement(eid: int, data: EngagementUpdate, db: Session = Depends(ge
 
 @router.put("/{eid}/members")
 def set_members(eid: int, data: MembersIn, db: Session = Depends(get_db),
-                user: User = Depends(require_roles(*STAFF))):
+                user: User = Depends(require_roles("lead", "reviewer"))):
     e = load_engagement(db, user, eid)
     users = db.query(User).filter(User.id.in_(data.user_ids), User.is_active.is_(True)).all()
     e.members = list(users)

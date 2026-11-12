@@ -11,6 +11,7 @@ from .. import audit
 from ..config import settings
 from ..database import get_db
 from ..deps import (
+    AUDIT_ROLES,
     STAFF,
     accessible_engagements,
     current_user,
@@ -204,7 +205,7 @@ def dashboard(db: Session = Depends(get_db), user: User = Depends(current_user))
 
 @router.get("/audit")
 def audit_log(limit: int = Query(200, ge=1, le=1000), db: Session = Depends(get_db),
-              _: User = Depends(require_roles(*STAFF))):
+              _: User = Depends(require_roles(*AUDIT_ROLES))):
     rows = db.query(AuditLog).order_by(AuditLog.id.desc()).limit(limit).all()
     return [{"id": r.id, "created_at": r.created_at, "username": r.username, "action": r.action,
              "entity": r.entity, "entity_id": r.entity_id, "detail": r.detail} for r in rows]

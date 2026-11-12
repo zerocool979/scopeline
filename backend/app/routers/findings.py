@@ -226,7 +226,7 @@ def review_finding(fid: int, data: ReviewIn, db: Session = Depends(get_db), user
         f.review_status, f.review_note = "in_review", data.note.strip()
     else:
         if user.role not in REVIEWERS:
-            raise HTTPException(403, "Hanya Peninjau/Lead/Admin yang dapat meninjau temuan")
+            raise HTTPException(403, "Hanya Engineer-Head Offensive Security yang dapat meninjau temuan")
         if f.review_status != "in_review":
             raise HTTPException(409, "Temuan belum diajukan untuk review")
         if data.action == "approve":

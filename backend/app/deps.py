@@ -8,14 +8,17 @@ from .models import Engagement, User
 from .security import decode_token
 
 bearer = HTTPBearer(auto_error=False)
+
+# Role names follow the five actors in the approved system analysis.
 ADMIN = ("admin",)
-STAFF = ("admin", "lead")
-WRITERS = ("admin", "lead", "tester")  # pelaksana pengujian: temuan, bukti, retest
-TEXT_EDITORS = ("admin", "lead", "tester", "writer")  # boleh menyunting teks temuan
-AUTHORS = TEXT_EDITORS  # boleh mengajukan review
-REVIEWERS = ("admin", "lead", "reviewer")  # boleh menyetujui / meminta perubahan
-TEMPLATE_ROLES = ("admin", "lead", "writer")  # boleh mengelola templat laporan
-NOTE_ROLES = ("admin", "lead", "tester", "reviewer")  # boleh melihat catatan pentester
+STAFF = ("lead",)                 # Project Manager only
+REVIEWERS = ("reviewer",)         # Engineer-Head Offensive Security
+WRITERS = ("tester",)             # Engineer-Red Team: findings, evidence, retest
+TEXT_EDITORS = ("tester", "writer")
+AUTHORS = TEXT_EDITORS
+TEMPLATE_ROLES = ("writer",)      # Engineer-Lead Technical Writer
+NOTE_ROLES = ("lead", "tester", "reviewer")
+AUDIT_ROLES = ("admin", "lead")
 
 
 def current_user(creds: HTTPAuthorizationCredentials | None = Depends(bearer),
@@ -41,13 +44,15 @@ def require_roles(*roles: str):
 
 
 def load_engagement(db: Session, user: User, eid: int) -> Engagement:
-    """Kontrol akses objek: penguji/peninjau hanya melihat engagement yang ditugaskan."""
+    """PM dapat melihat seluruh engagement; role operasional hanya yang ditugaskan."""
     e = db.get(Engagement, eid)
-    if not e or not (user.role in STAFF or any(m.id == user.id for m in e.members)):
+    if not e or not (user.role == "lead" or any(m.id == user.id for m in e.members)):
         raise HTTPException(404, "Engagement tidak ditemukan")
     return e
 
 
 def accessible_engagements(db: Session, user: User) -> list[Engagement]:
     rows = db.query(Engagement).order_by(Engagement.id.desc()).all()
-    return [e for e in rows if user.role in STAFF or any(m.id == user.id for m in e.members)]
+    if user.role == "lead":
+        return rows
+    return [e for e in rows if any(m.id == user.id for m in e.members)]
