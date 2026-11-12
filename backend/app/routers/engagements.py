@@ -73,7 +73,7 @@ def update_engagement(eid: int, data: EngagementUpdate, db: Session = Depends(ge
     if e.end_date < e.start_date:
         db.rollback()
         raise HTTPException(422, "Tanggal selesai tidak boleh sebelum tanggal mulai")
-    if sensitive and e.roe_approved:
+    if sensitive and (e.roe_approved or e.roe_project_manager_approved_by_id or e.roe_head_approved_by_id):
         e.roe_approved, e.roe_approved_by_id, e.roe_approved_at = False, None, None
         e.roe_project_manager_approved_by_id = e.roe_head_approved_by_id = None
         e.roe_project_manager_approved_at = e.roe_head_approved_at = None
