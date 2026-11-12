@@ -97,3 +97,11 @@ Checklist yang harus dijalankan terhadap deployment Production terbaru:
 ## Kesimpulan
 
 CVSS v4.0 telah digabung ke `main`, dan CI branch PR #9 lulus. Vercel terhubung ke repository; deployment Production sebelumnya berstatus READY, sedangkan deployment dokumentasi yang lebih baru sedang diproses saat pemeriksaan. Error aggregation 24 jam tidak menemukan error, tetapi log detail 24 jam tidak tersedia pada paket Hobby. **Status yang dapat diklaim: aplikasi terhubung ke Vercel; deployment terbaru menunggu konfirmasi READY; runtime acceptance bisnis belum diverifikasi.**
+
+
+## Perubahan kebijakan akses dan persetujuan
+
+- RoE kini membutuhkan persetujuan Project Manager (`lead`) dan Engineer-Head Offensive Security (`reviewer`); migrasi `0004` mengatur ulang persetujuan lama agar tidak dianggap memenuhi kebijakan baru.
+- Laporan final pretest/retest memerlukan persetujuan kedua role tersebut. Endpoint persetujuan menyimpan fingerprint versi data dan template; perubahan materi laporan memerlukan persetujuan ulang.
+- Admin tidak memiliki akses raw evidence: unduh ditolak, metadata evidence disembunyikan dari respons finding/laporan, serta operasi unggah/hapus dibatasi ke role operasional.
+- Deployment baru harus menjalankan migrasi Alembic `0004` sebelum menerima trafik. Setelah deploy, lakukan uji ulang persetujuan RoE, laporan final, dan pembatasan evidence.
