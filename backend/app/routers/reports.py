@@ -56,7 +56,8 @@ def _report_fingerprint(e, kind: str, tpl) -> str:
                          "evidence": [{"id": ev.id, "filename": ev.filename, "size": ev.size,
                                          "uploaded_at": ev.uploaded_at.isoformat()} for ev in rt.evidence]}
                         for rt in f.retests],
-            "evidence": [{"filename": ev.filename, "size": ev.size}
+            "evidence": [{"id": ev.id, "filename": ev.filename, "size": ev.size,
+                         "uploaded_at": ev.uploaded_at.isoformat()}
                          for ev in f.evidence if ev.retest_id is None],
         } for f in e.findings if f.review_status == "approved"],
     }
