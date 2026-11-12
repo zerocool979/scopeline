@@ -80,14 +80,17 @@ def test_roe_gating(client, tokens):
     assert r.json()["roe_approved"] is False
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 409
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["tester"]).status_code == 403
-    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is True
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is False
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 409
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).json()["roe_approved"] is True
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 200
     # mengubah RoE membatalkan persetujuan dan menjeda pengujian
     r = client.patch(f"/api/engagements/{eid}", headers=lead, json={"roe_text": "baru"}).json()
     assert r["roe_approved"] is False and r["status"] == "draft"
     assert client.post(f"/api/engagements/{eid}/findings", headers=lead, json=FIND).status_code == 409
-    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).status_code == 200
-    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "completed"}).status_code == 409
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is False
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).json()["roe_approved"] is True
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "completed"}).status_code == 200
 
 
 def test_engagement_validation(client, tokens):
@@ -208,11 +211,15 @@ def test_report_docx_and_template(client, tokens, eng):
         return "\n".join(p.text for p in Document(io.BytesIO(resp.content)).paragraphs)
     # laporan final hanya memuat temuan yang disetujui
     r = client.get(f"{base}?format=docx", headers=tokens["reviewer"])
+    assert r.status_code == 409
+    r = client.get(f"{base}?format=docx&include_unapproved=true", headers=tokens["reviewer"])
     assert r.status_code == 200 and zipfile.is_zipfile(io.BytesIO(r.content))
     assert "belum disetujui" in text_of(r)
     r = client.get(f"{base}?format=docx&include_unapproved=true", headers=t)
     assert "DRAF" in text_of(r) and "Judul  ctrl" in text_of(r)
     _approve(client, tokens, fid)
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["lead"]).status_code == 200
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["reviewer"]).status_code == 200
     r = client.get(f"{base}?format=docx", headers=tokens["reviewer"])
     assert "Ruang Lingkup" in text_of(r) and "Judul  ctrl" in text_of(r)
     assert client.get(f"{base}?format=exe", headers=t).status_code == 422
@@ -233,6 +240,8 @@ def test_report_docx_and_template(client, tokens, eng):
     assert r.json()["validation"]["unknown"] == ["foo"]
     tid = r.json()["id"]
     assert client.post(f"/api/report-templates/{tid}/activate", headers=tokens["lead"]).json()["status"] == "active"
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["lead"]).status_code == 200
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["reviewer"]).status_code == 200
     r = client.get(f"{base}?format=docx", headers=t)
     assert "LAPORAN PT ACME (fiktif) - Uji Fiktif ACME [v1] {{foo}}" in text_of(r)
     assert client.delete(f"/api/report-templates/{tid}", headers=tokens["lead"]).status_code == 409  # aktif
