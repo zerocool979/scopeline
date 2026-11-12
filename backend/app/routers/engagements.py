@@ -26,7 +26,7 @@ def eng_out(e: Engagement) -> dict:
         "start_date": e.start_date, "end_date": e.end_date, "roe_text": e.roe_text,
         "roe_approved": e.roe_approved,
         "roe_approved_by": e.roe_approved_by.username if e.roe_approved_by else None,
-        "roe_approved_at": e.roe_approved_at, "status": e.status,
+        "roe_approved_at": e.roe_approved_at,\n        "roe_approvals": {\n            "project_manager": {"approved": bool(e.roe_project_manager_approved_by_id), "approved_at": e.roe_project_manager_approved_at},\n            "engineer_head_offensive_security": {"approved": bool(e.roe_head_approved_by_id), "approved_at": e.roe_head_approved_at},\n        }, "status": e.status,
         "in_window": e.start_date <= today <= e.end_date,
         "members": [{"id": m.id, "username": m.username, "full_name": m.full_name} for m in e.members],
         "finding_count": len(e.findings),
@@ -71,6 +71,8 @@ def update_engagement(eid: int, data: EngagementUpdate, db: Session = Depends(ge
         raise HTTPException(422, "Tanggal selesai tidak boleh sebelum tanggal mulai")
     if sensitive and e.roe_approved:
         e.roe_approved, e.roe_approved_by_id, e.roe_approved_at = False, None, None
+        e.roe_project_manager_approved_by_id = e.roe_head_approved_by_id = None
+        e.roe_project_manager_approved_at = e.roe_head_approved_at = None
         if e.status == "active":
             e.status = "draft"  # pengujian dijeda hingga RoE disetujui ulang
         audit.log(db, user, "roe_approval_reset", "engagement", e.id, "scope/RoE berubah")
@@ -94,12 +96,21 @@ def set_members(eid: int, data: MembersIn, db: Session = Depends(get_db),
 
 
 @router.post("/{eid}/roe/approve")
-def approve_roe(eid: int, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
+def approve_roe(eid: int, db: Session = Depends(get_db),
+                user: User = Depends(require_roles("lead", "reviewer"))):
     e = load_engagement(db, user, eid)
     if not e.scope.strip() or not e.roe_text.strip():
         raise HTTPException(409, "Ruang lingkup dan RoE harus diisi sebelum disetujui")
-    e.roe_approved, e.roe_approved_by_id, e.roe_approved_at = True, user.id, utcnow()
-    audit.log(db, user, "roe_approved", "engagement", e.id)
+    now = utcnow()
+    if user.role == "lead":
+        e.roe_project_manager_approved_by_id, e.roe_project_manager_approved_at = user.id, now
+        role_label = "project_manager"
+    else:
+        e.roe_head_approved_by_id, e.roe_head_approved_at = user.id, now
+        role_label = "engineer_head_offensive_security"
+    e.roe_approved = bool(e.roe_project_manager_approved_by_id and e.roe_head_approved_by_id)
+    e.roe_approved_by_id, e.roe_approved_at = user.id, now
+    audit.log(db, user, "roe_approved", "engagement", e.id, role_label)
     db.commit()
     return eng_out(e)
 
