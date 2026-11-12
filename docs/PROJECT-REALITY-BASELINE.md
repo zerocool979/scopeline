@@ -34,9 +34,9 @@ Rincian implementasi dapat dilacak pada backend/app/models.py, backend/app/route
 
 1. Admin membuat akun dan menetapkan role.
 2. Admin/Lead membuat engagement, mengisi scope dan RoE, lalu menetapkan anggota.
-3. Admin/Lead menyetujui RoE. Hanya setelah itu engagement dapat berpindah dari draft ke active.
+3. Project Manager (role `lead`) dan Engineer-Head Offensive Security (role `reviewer`) masing-masing menyetujui RoE. Engagement baru dapat berpindah dari draft ke active setelah kedua persetujuan tercatat.
 4. Tester membuat temuan; skor CVSS dihitung di backend. Tester mengunggah bukti dan mencatat perubahan perbaikan.
-5. Pembuat mengajukan temuan untuk review. Reviewer, Lead, atau Admin yang bukan pembuat dapat menyetujui atau meminta perubahan.
+5. Pembuat mengajukan temuan untuk review. Engineer-Head Offensive Security (Reviewer) dan Project Manager (Lead) yang bukan pembuat dapat menyetujui atau meminta perubahan sesuai aturan empat mata.
 6. Perubahan isi temuan yang sudah diajukan/disetujui mengembalikan status review ke draft agar ditinjau ulang.
 7. Tester mencatat ronde retest; hanya hasil retest passed yang menghasilkan status retest_passed.
 8. Pengguna yang berhak menghasilkan laporan DOCX pretest atau retest. Laporan final menyertakan temuan approved; opsi menyertakan temuan lain menandai dokumen sebagai DRAF.
@@ -50,7 +50,7 @@ Lima role pada source adalah role aplikasi yang benar-benar diberlakukan oleh ba
 
 | Role kode | Nama di UI/dokumen | Tanggung jawab dan batas penting |
 |---|---|---|
-| admin | Admin | Pengguna, seluruh kewenangan Lead, template laporan/catatan, audit |
+| admin | Admin | Administrasi akun dan konfigurasi; tidak memiliki akses raw evidence |
 | lead | Lead | Engagement, scope/RoE, anggota, templat, review, audit |
 | tester | Penguji | Temuan, CVSS, bukti, CSV, perbaikan, retest, catatan; hanya engagement yang ditugaskan |
 | reviewer | Peninjau | Review temuan dan akses baca sesuai engagement yang ditugaskan |
@@ -153,3 +153,8 @@ Peran **Project Manager** berfokus pada nilai produk, ruang lingkup, prioritas, 
 - Target coverage 70% belum tercapai → workflow CI sekarang memiliki gate 70% dan run terbaru sukses.
 
 Dokumen Program Analysis v1.1 DOCX/PDF yang tersimpan di repository perlu ditinjau dan diterbitkan ulang bila narasinya belum mencerminkan baseline ini. Jangan menyebut dokumen biner tersebut sebagai status terkini sebelum sinkronisasi dilakukan.
+
+
+### Keputusan persetujuan dan evidence (pembaruan)
+
+RoE memerlukan dua persetujuan terpisah: Project Manager (`lead`) dan Engineer-Head Offensive Security (`reviewer`). Kolom status approval per pihak disimpan pada engagement; migrasi baru mengosongkan approval lama agar setiap engagement mendapat persetujuan ulang berdasarkan aturan baru. Laporan final pretest/retest juga memerlukan dua persetujuan. Persetujuan laporan diikat ke fingerprint data engagement, temuan, retest, dan template sehingga perubahan isi membuat approval lama tidak cocok dengan versi laporan terbaru. Admin tidak dapat melihat, mengunduh, mengunggah, atau menghapus raw evidence.
