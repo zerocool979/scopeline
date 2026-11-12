@@ -59,6 +59,7 @@ def eng(client, tokens):
     client.put(f"/api/engagements/{eid}/members", headers=lead,
                json={"user_ids": [ids["tester"], ids["reviewer"], ids["writer"]]})
     client.post(f"/api/engagements/{eid}/roe/approve", headers=lead)
+    client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"])
     r = client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"})
     assert r.status_code == 200
     return eid
@@ -73,5 +74,6 @@ def mk_engagement(client, tokens, members=("tester", "reviewer", "writer"), name
     client.put(f"/api/engagements/{eid}/members", headers=lead,
                json={"user_ids": [tokens["ids"][m] for m in members]})
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).status_code == 200
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).status_code == 200
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 200
     return eid
