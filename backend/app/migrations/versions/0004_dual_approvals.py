@@ -45,10 +45,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_index("ix_report_approvals_engagement_id", table_name="report_approvals")
     op.drop_table("report_approvals")
-    with op.batch_alter_table("engagements") as batch:
-        batch.drop_constraint("fk_engagements_roe_head_approver", type_="foreignkey")
-        batch.drop_constraint("fk_engagements_roe_pm_approver", type_="foreignkey")
-        batch.drop_column("roe_head_approved_at")
-        batch.drop_column("roe_head_approved_by_id")
-        batch.drop_column("roe_project_manager_approved_at")
-        batch.drop_column("roe_project_manager_approved_by_id")
+    op.drop_column("engagements", "roe_head_approved_at")
+    op.drop_column("engagements", "roe_head_approved_by_id")
+    op.drop_column("engagements", "roe_project_manager_approved_at")
+    op.drop_column("engagements", "roe_project_manager_approved_by_id")
