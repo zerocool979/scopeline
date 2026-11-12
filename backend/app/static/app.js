@@ -355,8 +355,8 @@ async function viewFinding(fid, eid) {
           toast('Ronde retest dicatat'); reload();
         })}, 'Catat retest')))));
 
-    // --- bukti (tidak untuk Technical Writer) ---
-    if (role !== 'writer') {
+    // --- bukti (tidak untuk Admin dan Technical Writer) ---
+    if (!["writer", "admin"].includes(role)) {
       const file = h('input', {type: 'file', accept: '.png,.jpg,.jpeg,.gif,.pdf,.txt,.log'});
       parts.push(h('div', {class: 'card', id: 'evidence'}, h('h2', {}, 'Bukti'),
         f.evidence.length ? h('table', {}, f.evidence.map(ev => h('tr', {}, h('td', {}, ev.filename), h('td', {class: 'muted'}, Math.ceil(ev.size / 1024) + ' KB'),
