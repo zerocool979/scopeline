@@ -1,3 +1,5 @@
+import hashlib
+import json
 import re
 from datetime import date
 
@@ -15,7 +17,7 @@ from ..deps import (
     load_engagement,
     require_roles,
 )
-from ..models import AuditLog, ReportTemplate, User
+from ..models import AuditLog, ReportApproval, ReportTemplate, User, utcnow
 from ..reporting import BUCKET_LABEL, PdfUnavailable, build_docx, compare_findings, docx_to_pdf
 from .engagements import eng_out
 from .findings import finding_out
@@ -24,10 +26,83 @@ router = APIRouter(prefix="/api", tags=["reports"])
 DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
 
+def _active_template(db: Session, kind: str):
+    return (db.query(ReportTemplate).options(undefer(ReportTemplate.data))
+            .filter(ReportTemplate.kind == kind, ReportTemplate.status == "active").first())
+
+
+def _report_fingerprint(e, kind: str, tpl) -> str:
+    payload = {
+        "kind": kind,
+        "template": None if tpl is None else {
+            "id": tpl.id, "version": tpl.version,
+            "sha256": hashlib.sha256(tpl.data).hexdigest(),
+        },
+        "engagement": {
+            "id": e.id, "name": e.name, "client": e.client, "scope": e.scope,
+            "start_date": e.start_date.isoformat(), "end_date": e.end_date.isoformat(),
+            "roe_text": e.roe_text, "status": e.status,
+        },
+        "findings": [{
+            "id": f.id, "number": f.number, "title": f.title, "description": f.description,
+            "impact": f.impact, "recommendation": f.recommendation, "cvss_vector": f.cvss_vector,
+            "cvss_version": f.cvss_version, "cvss_score": f.cvss_score, "severity": f.severity,
+            "status": f.status, "review_status": f.review_status, "review_note": f.review_note,
+            "retests": [{"round_no": rt.round_no, "result": rt.result,
+                         "tested_at": rt.tested_at.isoformat(), "notes": rt.notes}
+                        for rt in f.retests],
+            "evidence": [{"filename": ev.filename, "size": ev.size}
+                         for ev in f.evidence if ev.retest_id is None],
+        } for f in e.findings if f.review_status == "approved"],
+    }
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
 def _selected(e, include_unapproved: bool):
     """Laporan final hanya memuat temuan yang sudah disetujui peninjau."""
     chosen = [f for f in e.findings if include_unapproved or f.review_status == "approved"]
     return chosen, len(e.findings) - len(chosen)
+
+
+@router.post("/engagements/{eid}/reports/{kind}/approve")
+def approve_report(eid: int, kind: str, db: Session = Depends(get_db),
+                   user: User = Depends(require_roles("lead", "reviewer"))):
+    if kind not in ("pretest", "retest"):
+        raise HTTPException(422, "Jenis laporan tidak valid")
+    e = load_engagement(db, user, eid)
+    if e.status not in ("active", "completed") or not e.roe_approved:
+        raise HTTPException(409, "Laporan hanya dapat disetujui pada engagement aktif/selesai dengan RoE disetujui")
+    fingerprint = _report_fingerprint(e, kind, _active_template(db, kind))
+    row = db.query(ReportApproval).filter_by(
+        engagement_id=e.id, kind=kind, approver_role=user.role).first()
+    if row is None:
+        row = ReportApproval(engagement_id=e.id, kind=kind, approver_role=user.role,
+                             approved_by_id=user.id, fingerprint=fingerprint, approved_at=utcnow())
+        db.add(row)
+    else:
+        row.approved_by_id, row.fingerprint, row.approved_at = user.id, fingerprint, utcnow()
+    audit.log(db, user, "report_approved", "engagement", e.id, f"{kind}:{user.role}:{fingerprint[:12]}")
+    db.commit()
+    return {"kind": kind, "role": user.role, "approved": True, "fingerprint": fingerprint}
+
+
+@router.get("/engagements/{eid}/reports/{kind}/approvals")
+def report_approvals(eid: int, kind: str, db: Session = Depends(get_db),
+                     user: User = Depends(current_user)):
+    if kind not in ("pretest", "retest"):
+        raise HTTPException(422, "Jenis laporan tidak valid")
+    e = load_engagement(db, user, eid)
+    fingerprint = _report_fingerprint(e, kind, _active_template(db, kind))
+    rows = db.query(ReportApproval).filter_by(
+        engagement_id=e.id, kind=kind, fingerprint=fingerprint).all()
+    roles = {row.approver_role for row in rows}
+    return {
+        "kind": kind, "fingerprint": fingerprint,
+        "project_manager": {"approved": "lead" in roles},
+        "engineer_head_offensive_security": {"approved": "reviewer" in roles},
+        "final_approved": {"lead", "reviewer"}.issubset(roles),
+    }
 
 
 @router.get("/engagements/{eid}/report")
@@ -36,11 +111,16 @@ def export_report(eid: int, format: str = Query("docx", pattern="^(docx|pdf)$"),
                   db: Session = Depends(get_db), user: User = Depends(current_user)):
     e = load_engagement(db, user, eid)
     chosen, hidden = _selected(e, include_unapproved)
-    with_ev = user.role != "writer"  # Technical Writer: laporan tanpa bukti mentah
+    tpl = _active_template(db, kind)
+    if not include_unapproved:
+        fingerprint = _report_fingerprint(e, kind, tpl)
+        roles = {a.approver_role for a in db.query(ReportApproval).filter_by(
+            engagement_id=e.id, kind=kind, fingerprint=fingerprint).all()}
+        if not {"lead", "reviewer"}.issubset(roles):
+            raise HTTPException(409, "Laporan final memerlukan persetujuan Project Manager dan Engineer-Head Offensive Security untuk versi data saat ini")
+    with_ev = user.role not in ("writer", "admin")  # Admin dan Technical Writer tidak mendapat raw evidence
     findings = [finding_out(f, with_evidence=with_ev, blobs=True) for f in chosen]
     draft = any(f["review_status"] != "approved" for f in findings)
-    tpl = (db.query(ReportTemplate).options(undefer(ReportTemplate.data))
-           .filter(ReportTemplate.kind == kind, ReportTemplate.status == "active").first())
     label = f"v{tpl.version}" if tpl else "bawaan"
     docx = build_docx(kind, eng_out(e), findings, evidence_dir=settings.evidence_dir,
                       template_bytes=tpl.data if tpl else None, template_label=label, hidden=hidden, draft=draft)
