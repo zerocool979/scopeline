@@ -160,6 +160,7 @@ def test_evidence_upload_rules(client, tokens, eng):
     assert up("a.txt", b"abc\x00def").status_code == 415
     assert up("big.png", PNG + b"0" * (6 * 1024 * 1024)).status_code == 413
     assert up("ok.png", PNG, tokens["reviewer"]).status_code == 403
+    assert up("admin.png", PNG, tokens["admin"]).status_code == 403
     r = up("../../etc/pa ss.png", PNG)
     assert r.status_code == 201
     ev = r.json()["evidence"][0]
@@ -169,6 +170,8 @@ def test_evidence_upload_rules(client, tokens, eng):
     assert d.headers["content-disposition"].startswith("attachment")
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["tester2"]).status_code == 404
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["admin"]).status_code == 403
+    admin_finding = client.get(f"/api/findings/{fid}", headers=tokens["admin"]).json()
+    assert admin_finding["evidence"] == []
     assert client.delete(f"/api/evidence/{ev['id']}", headers=t).status_code == 204
 
 
