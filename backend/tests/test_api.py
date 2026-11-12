@@ -77,6 +77,7 @@ def test_roe_gating(client, tokens):
         "name": "Gating", "client": "X", "scope": "s", "start_date": "2026-01-01",
         "end_date": "2026-02-01", "roe_text": "r"})
     eid = r.json()["id"]
+    client.put(f"/api/engagements/{eid}/members", headers=lead, json={"user_ids": [tokens["ids"]["reviewer"]]})
     assert r.json()["roe_approved"] is False
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 409
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["tester"]).status_code == 403
@@ -252,7 +253,7 @@ def test_report_pdf(client, tokens, eng):
     import shutil
     if not (shutil.which("soffice") or shutil.which("libreoffice")):
         pytest.skip("LibreOffice tidak tersedia")
-    r = client.get(f"/api/engagements/{eng}/report?format=pdf", headers=tokens["lead"])
+    r = client.get(f"/api/engagements/{eng}/report?format=pdf&include_unapproved=true", headers=tokens["lead"])
     assert r.status_code == 200 and r.content.startswith(b"%PDF")
 
 
