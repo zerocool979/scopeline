@@ -86,7 +86,7 @@ function layout(active, ...content) {
   return [
     h('nav', {}, h('span', {class: 'logo'}, 'SCOPE', h('b', {}, 'LINE')),
       link('', 'Dasbor', 'dash'), link('engagements', 'Engagement', 'eng'),
-      ['admin', 'lead', 'writer'].includes(state.user.role) && link('templates', 'Templat', 'tpl'), ['admin', 'lead'].includes(state.user.role) && link('audit', 'Log Audit', 'audit'),
+      state.user.role === 'writer' && link('templates', 'Templat', 'tpl'), ['admin', 'lead'].includes(state.user.role) && link('audit', 'Log Audit', 'audit'),
       state.user.role === 'admin' && link('users', 'Pengguna', 'users'),
       h('span', {class: 'sp'}), h('span', {class: 'who'}, `${state.user.full_name} (${ROLE[state.user.role]})`),
       link('account', 'Akun', 'acc'), h('a', {href: '#', onclick: e => { e.preventDefault(); logout(); }}, 'Keluar')),

@@ -379,7 +379,7 @@ def list_templates(db: Session = Depends(get_db), _: User = Depends(current_user
 
 
 @router.post("/finding-templates", status_code=201)
-def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles("reviewer"))):
+def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
     _score(data.cvss_vector)
     t = FindingTemplate(
         **data.model_dump(exclude={"cvss_vector"}),
@@ -394,7 +394,7 @@ def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User 
 
 
 @router.delete("/finding-templates/{tid}", status_code=204)
-def delete_template(tid: int, db: Session = Depends(get_db), user: User = Depends(require_roles("reviewer"))):
+def delete_template(tid: int, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
     t = db.get(FindingTemplate, tid)
     if not t:
         raise HTTPException(404, "Templat tidak ditemukan")
