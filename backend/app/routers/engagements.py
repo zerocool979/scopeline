@@ -28,8 +28,14 @@ def eng_out(e: Engagement) -> dict:
         "roe_approved_by": e.roe_approved_by.username if e.roe_approved_by else None,
         "roe_approved_at": e.roe_approved_at,
         "roe_approvals": {
-            "project_manager": {"approved": bool(e.roe_project_manager_approved_by_id), "approved_at": e.roe_project_manager_approved_at},
-            "engineer_head_offensive_security": {"approved": bool(e.roe_head_approved_by_id), "approved_at": e.roe_head_approved_at},
+            "project_manager": {
+                "approved": bool(e.roe_project_manager_approved_by_id),
+                "approved_at": e.roe_project_manager_approved_at,
+            },
+            "engineer_head_offensive_security": {
+                "approved": bool(e.roe_head_approved_by_id),
+                "approved_at": e.roe_head_approved_at,
+            },
         }, "status": e.status,
         "in_window": e.start_date <= today <= e.end_date,
         "members": [{"id": m.id, "username": m.username, "full_name": m.full_name} for m in e.members],
