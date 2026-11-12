@@ -39,3 +39,11 @@ Dokumen ini mencatat keputusan penting agar keputusan bisnis, implementasi, dan 
 - **Status:** Disetujui
 - **Keputusan:** Build/deployment state READY tidak boleh ditafsirkan sebagai bukti health check, keamanan, backup/restore, atau acceptance runtime.
 - **Konsekuensi:** Setiap rilis harus melampirkan deployment ID, commit SHA, smoke test, acceptance evidence, dan rollback plan.
+
+
+## ADR-008 — Persetujuan ganda RoE dan laporan; pembatasan raw evidence
+- **Status:** Diimplementasikan pada branch `feature/dual-approvals-evidence-rbac`; menunggu CI dan rilis.
+- **Keputusan:** RoE harus disetujui Project Manager (role `lead`) dan Engineer-Head Offensive Security (role `reviewer`). Laporan final pretest/retest juga memerlukan persetujuan kedua role tersebut.
+- **Validitas persetujuan laporan:** Approval terikat pada fingerprint data engagement, finding yang disetujui, ronde retest, metadata evidence, dan template aktif. Perubahan materi menghasilkan fingerprint baru dan memerlukan approval ulang.
+- **Raw evidence:** Admin tidak memiliki akses melihat atau mengunduh bukti mentah serta tidak dapat mengunggah/menghapus evidence.
+- **Konsekuensi:** Migrasi `0004` menambahkan status persetujuan terpisah dan tabel `report_approvals`; persetujuan RoE lama direset agar tidak dianggap memenuhi persyaratan dua pihak.
