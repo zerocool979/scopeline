@@ -77,17 +77,22 @@ def test_roe_gating(client, tokens):
         "name": "Gating", "client": "X", "scope": "s", "start_date": "2026-01-01",
         "end_date": "2026-02-01", "roe_text": "r"})
     eid = r.json()["id"]
+    client.put(f"/api/engagements/{eid}/members", headers=lead, json={"user_ids": [tokens["ids"]["reviewer"]]})
     assert r.json()["roe_approved"] is False
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 409
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["tester"]).status_code == 403
-    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is True
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is False
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 409
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).json()["roe_approved"] is True
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 200
     # mengubah RoE membatalkan persetujuan dan menjeda pengujian
     r = client.patch(f"/api/engagements/{eid}", headers=lead, json={"roe_text": "baru"}).json()
     assert r["roe_approved"] is False and r["status"] == "draft"
     assert client.post(f"/api/engagements/{eid}/findings", headers=lead, json=FIND).status_code == 409
-    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).status_code == 200
-    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "completed"}).status_code == 409
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is False
+    assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).json()["roe_approved"] is True
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 200
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "completed"}).status_code == 200
 
 
 def test_engagement_validation(client, tokens):
@@ -155,6 +160,7 @@ def test_evidence_upload_rules(client, tokens, eng):
     assert up("a.txt", b"abc\x00def").status_code == 415
     assert up("big.png", PNG + b"0" * (6 * 1024 * 1024)).status_code == 413
     assert up("ok.png", PNG, tokens["reviewer"]).status_code == 403
+    assert up("admin.png", PNG, tokens["admin"]).status_code == 403
     r = up("../../etc/pa ss.png", PNG)
     assert r.status_code == 201
     ev = r.json()["evidence"][0]
@@ -163,6 +169,9 @@ def test_evidence_upload_rules(client, tokens, eng):
     assert d.status_code == 200 and d.content == PNG
     assert d.headers["content-disposition"].startswith("attachment")
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["tester2"]).status_code == 404
+    assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["admin"]).status_code == 403
+    admin_finding = client.get(f"/api/findings/{fid}", headers=tokens["admin"]).json()
+    assert admin_finding["evidence"] == []
     assert client.delete(f"/api/evidence/{ev['id']}", headers=t).status_code == 204
 
 
@@ -208,11 +217,15 @@ def test_report_docx_and_template(client, tokens, eng):
         return "\n".join(p.text for p in Document(io.BytesIO(resp.content)).paragraphs)
     # laporan final hanya memuat temuan yang disetujui
     r = client.get(f"{base}?format=docx", headers=tokens["reviewer"])
+    assert r.status_code == 409
+    r = client.get(f"{base}?format=docx&include_unapproved=true", headers=tokens["reviewer"])
     assert r.status_code == 200 and zipfile.is_zipfile(io.BytesIO(r.content))
     assert "belum disetujui" in text_of(r)
     r = client.get(f"{base}?format=docx&include_unapproved=true", headers=t)
     assert "DRAF" in text_of(r) and "Judul  ctrl" in text_of(r)
     _approve(client, tokens, fid)
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["lead"]).status_code == 200
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["reviewer"]).status_code == 200
     r = client.get(f"{base}?format=docx", headers=tokens["reviewer"])
     assert "Ruang Lingkup" in text_of(r) and "Judul  ctrl" in text_of(r)
     assert client.get(f"{base}?format=exe", headers=t).status_code == 422
@@ -233,6 +246,8 @@ def test_report_docx_and_template(client, tokens, eng):
     assert r.json()["validation"]["unknown"] == ["foo"]
     tid = r.json()["id"]
     assert client.post(f"/api/report-templates/{tid}/activate", headers=tokens["lead"]).json()["status"] == "active"
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["lead"]).status_code == 200
+    assert client.post(f"/api/engagements/{eng}/reports/pretest/approve", headers=tokens["reviewer"]).status_code == 200
     r = client.get(f"{base}?format=docx", headers=t)
     assert "LAPORAN PT ACME (fiktif) - Uji Fiktif ACME [v1] {{foo}}" in text_of(r)
     assert client.delete(f"/api/report-templates/{tid}", headers=tokens["lead"]).status_code == 409  # aktif
@@ -242,7 +257,7 @@ def test_report_pdf(client, tokens, eng):
     import shutil
     if not (shutil.which("soffice") or shutil.which("libreoffice")):
         pytest.skip("LibreOffice tidak tersedia")
-    r = client.get(f"/api/engagements/{eng}/report?format=pdf", headers=tokens["lead"])
+    r = client.get(f"/api/engagements/{eng}/report?format=pdf&include_unapproved=true", headers=tokens["lead"])
     assert r.status_code == 200 and r.content.startswith(b"%PDF")
 
 
@@ -277,9 +292,9 @@ def test_evidence_stored_in_database_and_pdf_toggle(client, tokens, eng, monkeyp
     ev = r.json()["evidence"][0]
     assert not (settings.evidence_dir / "db.png").exists()
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=t).content == PNG
-    assert client.get(f"/api/engagements/{eng}/report?format=docx", headers=t).status_code == 200
+    assert client.get(f"/api/engagements/{eng}/report?format=docx&include_unapproved=true", headers=t).status_code == 200
     monkeypatch.setattr(settings, "enable_pdf", False)
-    assert client.get(f"/api/engagements/{eng}/report?format=pdf", headers=t).status_code == 503
+    assert client.get(f"/api/engagements/{eng}/report?format=pdf&include_unapproved=true", headers=t).status_code == 503
 
 
 

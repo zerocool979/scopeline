@@ -271,3 +271,8 @@ Status tiap run harus diperiksa pada commit yang menjadi kandidat rilis. Kelulus
 - [Checklist self-assessment OWASP ASVS L1](ASVS-L1-checklist.md)
 - [FIRST CVSS v4.0 Specification](https://www.first.org/cvss/v4.0/specification-document)
 - Source utama: `backend/app/`, `backend/tests/`, `e2e/`, konfigurasi root, dan workflow GitHub Actions.
+
+
+### Persetujuan RoE, laporan, dan akses evidence (keputusan terbaru)
+
+RoE wajib disetujui oleh Project Manager (role aplikasi `lead`) dan Engineer-Head Offensive Security (role aplikasi `reviewer`). Engagement baru dapat diaktifkan setelah kedua pihak menyetujui. Persetujuan akhir laporan pretest maupun retest juga diberikan oleh kedua pihak tersebut. Persetujuan laporan disimpan berdasarkan fingerprint versi data dan template agar perubahan isi membutuhkan persetujuan ulang. Admin tidak memiliki akses ke raw evidence, termasuk unduh, unggah, dan hapus.

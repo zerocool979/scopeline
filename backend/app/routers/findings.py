@@ -68,7 +68,7 @@ def finding_out(f: Finding, with_evidence: bool = True, blobs: bool = False) -> 
 
 
 def _out(f: Finding, user: User) -> dict:
-    return finding_out(f, with_evidence=user.role != "writer")
+    return finding_out(f, with_evidence=user.role not in ("writer", "admin"))
 
 
 def _score(vector: str) -> tuple[float, str]:
@@ -263,7 +263,7 @@ def add_retest(fid: int, data: RetestIn, db: Session = Depends(get_db),
 
 @router.post("/retests/{rid}/evidence", status_code=201)
 def upload_retest_evidence(rid: int, file: UploadFile = File(...), db: Session = Depends(get_db),
-                           user: User = Depends(require_roles(*WRITERS))):
+                           user: User = Depends(require_roles("lead", "tester"))):
     r = db.get(Retest, rid)
     if not r:
         raise HTTPException(404, "Ronde retest tidak ditemukan")
@@ -326,7 +326,7 @@ def _store_evidence(db: Session, user: User, f: Finding, file: UploadFile, retes
 
 @router.post("/findings/{fid}/evidence", status_code=201)
 def upload_evidence(fid: int, file: UploadFile = File(...), db: Session = Depends(get_db),
-                    user: User = Depends(require_roles(*WRITERS))):
+                    user: User = Depends(require_roles("lead", "tester"))):
     f, e = _load_finding(db, user, fid)
     _ensure_active(e)
     _store_evidence(db, user, f, file)
@@ -344,8 +344,8 @@ def _load_evidence(db: Session, user: User, evid: int) -> tuple[Evidence, Findin
 
 @router.get("/evidence/{evid}/download")
 def download_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    if user.role == "writer":
-        raise HTTPException(403, "Technical Writer tidak memiliki akses ke bukti mentah")
+    if user.role in ("writer", "admin"):
+        raise HTTPException(403, "Role ini tidak memiliki akses ke bukti mentah")
     ev, _, _ = _load_evidence(db, user, evid)
     path = settings.evidence_dir / ev.stored_name
     if ev.data is not None:
@@ -359,7 +359,7 @@ def download_evidence(evid: int, db: Session = Depends(get_db), user: User = Dep
 
 
 @router.delete("/evidence/{evid}", status_code=204)
-def delete_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(require_roles(*WRITERS))):
+def delete_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(require_roles("lead", "tester"))):
     ev, f, e = _load_evidence(db, user, evid)
     _ensure_active(e)
     (settings.evidence_dir / ev.stored_name).unlink(missing_ok=True)

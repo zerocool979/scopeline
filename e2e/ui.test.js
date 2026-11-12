@@ -102,7 +102,7 @@ async function step(name, fn) {
     ctx.lead = s;  // sesi dipakai ulang pada langkah berikutnya
   });
 
-  await step('Lead: buat engagement, isi RoE, setujui, tugaskan tim, mulai pengujian', async () => {
+  await step('Project Manager dan Engineer-Head: persetujuan RoE ganda sebelum aktivasi', async () => {
     const s = ctx.lead;
     s.go('#/engagements'); await s.see('Engagement baru');
     const form = s.card('Engagement baru');
@@ -112,18 +112,24 @@ async function step(name, fn) {
     ctx.engHash = s.win.location.hash;
     s.set(s.label('Ruang lingkup (target yang diizinkan)'), 'app.klien.example'); await s.click('Simpan'); await s.seeToast('Disimpan');
     const roe = s.card('Rules of Engagement');
-    await waitFor(() => s.card('Rules of Engagement'), 'kartu RoE');
-    s.set(s.card('Rules of Engagement').querySelector('textarea'), 'Hanya jam kerja, tanpa DoS.');
+    s.set(roe.querySelector('textarea'), 'Hanya jam kerja, tanpa DoS.');
     await s.click('Simpan RoE'); await s.seeToast('RoE disimpan');
-    assert.ok(s.button('Mulai pengujian').disabled, 'mulai pengujian terkunci sebelum RoE disetujui');
-    await s.click('Setujui RoE'); await s.see('Disetujui oleh lead');
     const members = s.card('Anggota tim');
-    for (const lbl of ['Tester (Penguji)', 'Reviewer (Peninjau)', 'Writer (Technical Writer)']) {
+    for (const lbl of ['Tester (Engineer-Red Team)', 'Reviewer (Engineer-Head Offensive Security)', 'Writer (Engineer-Lead Technical Writer)']) {
       const box = s.qa('label', members).find(l => l.textContent.trim() === lbl);
       assert.ok(box, 'checkbox ' + lbl); box.querySelector('input').checked = true;
     }
     await s.click('Simpan anggota', members); await s.seeToast('Anggota disimpan');
-    await waitFor(() => !s.button('Mulai pengujian').disabled, 'tombol mulai aktif');
+    assert.ok(s.button('Mulai pengujian').disabled, 'mulai pengujian terkunci sebelum kedua persetujuan RoE');
+    await s.click('Setujui RoE');
+    await s.see('Persetujuan Project Manager: Disetujui');
+    assert.ok(s.button('Mulai pengujian').disabled, 'satu persetujuan belum cukup');
+    const head = await open('reviewer'); ctx.reviewer = head;
+    head.go(ctx.engHash); await head.see('Persetujuan Project Manager: Disetujui');
+    await head.click('Setujui RoE');
+    await head.seeToast('Persetujuan RoE dicatat');
+    s.go('#/'); await s.see('Dasbor'); s.go(ctx.engHash);
+    await waitFor(() => !s.button('Mulai pengujian').disabled, 'kedua persetujuan tercatat');
     await s.click('Mulai pengujian'); await waitFor(() => s.q('h1 + div .badge.active, .between .badge.active'), 'status aktif');
     await s.see('Catatan pentester (Markdown)'); await s.see('Catatan tim'); await s.see('Catatan Tester');
   });
