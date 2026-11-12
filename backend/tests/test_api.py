@@ -91,6 +91,7 @@ def test_roe_gating(client, tokens):
     assert client.post(f"/api/engagements/{eid}/findings", headers=lead, json=FIND).status_code == 409
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=lead).json()["roe_approved"] is False
     assert client.post(f"/api/engagements/{eid}/roe/approve", headers=tokens["reviewer"]).json()["roe_approved"] is True
+    assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "active"}).status_code == 200
     assert client.post(f"/api/engagements/{eid}/status", headers=lead, json={"status": "completed"}).status_code == 200
 
 
