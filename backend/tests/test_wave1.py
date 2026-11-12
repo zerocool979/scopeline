@@ -215,6 +215,8 @@ def test_report_template_versioning(client, tokens):
     assert client.get(f"/api/report-templates/{v1['id']}/validate", headers=W).json()["placeholders"] == ["client"]
     # laporan mencatat versi templat yang dipakai
     eid = mk_engagement(client, tokens, name="Versi Templat")
+    assert client.post(f"/api/engagements/{eid}/reports/retest/approve", headers=L).status_code == 200
+    assert client.post(f"/api/engagements/{eid}/reports/retest/approve", headers=tokens["reviewer"]).status_code == 200
     rep = client.get(f"/api/engagements/{eid}/report?kind=retest", headers=tokens["tester"])
     assert any(f"templat retest: v{v1['version']}" in p for p in text_of(rep))
     assert text_of(rep)[0].startswith("v1 Klien Fiktif")
@@ -229,6 +231,8 @@ def test_content_marker_in_template(client, tokens):
                     files={"file": ("m.docx", data)}).json()
     assert r["validation"]["has_content_marker"] is True and r["validation"]["unknown"] == []
     client.post(f"/api/report-templates/{r['id']}/activate", headers=tokens["lead"])
+    assert client.post(f"/api/engagements/{eid}/reports/pretest/approve", headers=tokens["lead"]).status_code == 200
+    assert client.post(f"/api/engagements/{eid}/reports/pretest/approve", headers=tokens["reviewer"]).status_code == 200
     paras = text_of(client.get(f"/api/engagements/{eid}/report", headers=tokens["tester"]))
     top, mid, bottom = (next(i for i, p in enumerate(paras) if k in p)
                         for k in ("BAGIAN ATAS Penanda", "1. Ringkasan Engagement", "BAGIAN BAWAH"))
@@ -354,14 +358,15 @@ with engine.connect() as c:
     row = c.execute(sa.text("SELECT title, review_status FROM findings")).one()
     ver = c.execute(sa.text("SELECT version_num FROM alembic_version")).scalar()
     cols = [r[1] for r in c.execute(sa.text("PRAGMA table_info(evidence)"))]
-    print(row[0], row[1], ver, "data" in cols, "retest_id" in cols)
+    roe = c.execute(sa.text("SELECT roe_approved FROM engagements WHERE id=1")).scalar()
+    print(row[0], row[1], ver, roe, "data" in cols, "retest_id" in cols)
 """
 
 
 @pytest.mark.parametrize("drop_data", [False, True])
 def test_legacy_database_is_adopted(tmp_path, drop_data):
     out = _run(LEGACY % {"drop_data": drop_data}, f"sqlite:///{tmp_path}/legacy.db", tmp_path)
-    assert out.splitlines()[-1] == "Lama approved 0003 True True"  # data utuh, temuan lama dianggap sudah disetujui
+    assert out.splitlines()[-1] == "Lama approved 0004 0 True True"  # data utuh, temuan lama dianggap sudah disetujui
 
 
 def test_login_with_new_roles(client, tokens):
