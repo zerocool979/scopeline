@@ -49,7 +49,8 @@ def _report_fingerprint(e, kind: str, tpl) -> str:
             "cvss_version": f.cvss_version, "cvss_score": f.cvss_score, "severity": f.severity,
             "status": f.status, "review_status": f.review_status, "review_note": f.review_note,
             "retests": [{"round_no": rt.round_no, "result": rt.result,
-                         "tested_at": rt.tested_at.isoformat(), "notes": rt.notes,\n                         "evidence": [{"filename": ev.filename, "size": ev.size} for ev in rt.evidence]}
+                         "tested_at": rt.tested_at.isoformat(), "notes": rt.notes,
+                         "evidence": [{"filename": ev.filename, "size": ev.size} for ev in rt.evidence]}
                         for rt in f.retests],
             "evidence": [{"filename": ev.filename, "size": ev.size}
                          for ev in f.evidence if ev.retest_id is None],
