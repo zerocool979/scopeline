@@ -288,9 +288,9 @@ def test_evidence_stored_in_database_and_pdf_toggle(client, tokens, eng, monkeyp
     ev = r.json()["evidence"][0]
     assert not (settings.evidence_dir / "db.png").exists()
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=t).content == PNG
-    assert client.get(f"/api/engagements/{eng}/report?format=docx", headers=t).status_code == 200
+    assert client.get(f"/api/engagements/{eng}/report?format=docx&include_unapproved=true", headers=t).status_code == 200
     monkeypatch.setattr(settings, "enable_pdf", False)
-    assert client.get(f"/api/engagements/{eng}/report?format=pdf", headers=t).status_code == 503
+    assert client.get(f"/api/engagements/{eng}/report?format=pdf&include_unapproved=true", headers=t).status_code == 503
 
 
 
