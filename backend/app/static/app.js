@@ -477,17 +477,29 @@ function reportCard(id, activeTpl) {
   const kind = h('select', {id: 'rep-kind'}, h('option', {value: 'pretest'}, 'Pretest (laporan awal)'), h('option', {value: 'retest'}, 'Retest (verifikasi)'));
   const draft = h('input', {type: 'checkbox', id: 'rep-draft'});
   const info = h('p', {class: 'muted', id: 'rep-info'});
-  const upd = () => {
+  const approvals = h('p', {class: 'muted'});
+  const actions = h('div', {class: 'actions'});
+  const refresh = async () => {
     const t = activeTpl[kind.value];
     info.textContent = t ? `Templat aktif: ${kind.value} v${t.version}` : 'Templat aktif: bawaan (belum ada templat kustom)';
+    const a = await api(`/engagements/${id}/reports/${kind.value}/approvals`);
+    approvals.textContent = `Persetujuan Project Manager: ${a.project_manager.approved ? 'Disetujui' : 'Menunggu'} · Engineer-Head Offensive Security: ${a.engineer_head_offensive_security.approved ? 'Disetujui' : 'Menunggu'}`;
   };
-  kind.addEventListener('change', upd); upd();
+  kind.addEventListener('change', () => refresh().catch(x => toast(x.message, true)));
   const dl = fmt => act(() => download(`/engagements/${id}/report?format=${fmt}&kind=${kind.value}&include_unapproved=${draft.checked}`,
     `laporan-${kind.value}${draft.checked ? '-draf' : ''}.${fmt}`));
+  if (['lead', 'reviewer'].includes(state.user.role)) {
+    actions.append(h('button', {class: 'sec', onclick: act(async () => {
+      await api(`/engagements/${id}/reports/${kind.value}/approve`, {method: 'POST'});
+      await refresh(); toast('Persetujuan laporan dicatat');
+    })}, 'Setujui laporan'));
+  }
+  actions.append(h('button', {onclick: dl('docx')}, 'Unduh DOCX'), h('button', {class: 'sec', onclick: dl('pdf')}, 'Unduh PDF'));
+  refresh().catch(x => { approvals.textContent = x.message; });
   return h('div', {class: 'card'}, h('h2', {}, 'Laporan'),
-    h('div', {class: 'row'}, field('Jenis laporan', kind), h('div', {}, h('label', {}, draft, ' Sertakan temuan belum disetujui (ditandai DRAF)'))), info,
-    h('div', {class: 'actions'}, h('button', {onclick: dl('docx')}, 'Unduh DOCX'), h('button', {class: 'sec', onclick: dl('pdf')}, 'Unduh PDF')),
-    h('p', {class: 'muted'}, 'Laporan final hanya memuat temuan berstatus Disetujui. Retest memuat perbandingan dan riwayat ronde.'));
+    h('div', {class: 'row'}, field('Jenis laporan', kind), h('div', {}, h('label', {}, draft, ' Sertakan temuan belum disetujui (ditandai DRAF)'))),
+    info, approvals, actions,
+    h('p', {class: 'muted'}, 'Laporan final hanya dapat diunduh setelah disetujui Project Manager dan Engineer-Head Offensive Security. Persetujuan mengikuti versi data dan template saat disetujui.'));
 }
 
 function comparisonCard(cmp) {
