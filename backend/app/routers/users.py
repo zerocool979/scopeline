@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from .. import audit
 from ..database import get_db
-from ..deps import ADMIN, STAFF, require_roles
+from ..deps import ADMIN, require_roles
 from ..models import User
 from ..schemas import UserCreate, UserOut, UserUpdate
 from ..security import hash_password
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 @router.get("", response_model=list[UserOut])
-def list_users(db: Session = Depends(get_db), _: User = Depends(require_roles(*STAFF))):
+def list_users(db: Session = Depends(get_db), _: User = Depends(require_roles(*ADMIN))):
     return db.query(User).order_by(User.username).all()
 
 

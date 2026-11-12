@@ -226,7 +226,7 @@ def review_finding(fid: int, data: ReviewIn, db: Session = Depends(get_db), user
         f.review_status, f.review_note = "in_review", data.note.strip()
     else:
         if user.role not in REVIEWERS:
-            raise HTTPException(403, "Hanya Peninjau/Lead/Admin yang dapat meninjau temuan")
+            raise HTTPException(403, "Hanya Engineer-Head Offensive Security yang dapat meninjau temuan")
         if f.review_status != "in_review":
             raise HTTPException(409, "Temuan belum diajukan untuk review")
         if data.action == "approve":
@@ -379,7 +379,7 @@ def list_templates(db: Session = Depends(get_db), _: User = Depends(current_user
 
 
 @router.post("/finding-templates", status_code=201)
-def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
+def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User = Depends(require_roles("reviewer"))):
     _score(data.cvss_vector)
     t = FindingTemplate(
         **data.model_dump(exclude={"cvss_vector"}),
@@ -394,7 +394,7 @@ def create_template(data: TemplateIn, db: Session = Depends(get_db), user: User 
 
 
 @router.delete("/finding-templates/{tid}", status_code=204)
-def delete_template(tid: int, db: Session = Depends(get_db), user: User = Depends(require_roles(*STAFF))):
+def delete_template(tid: int, db: Session = Depends(get_db), user: User = Depends(require_roles("reviewer"))):
     t = db.get(FindingTemplate, tid)
     if not t:
         raise HTTPException(404, "Templat tidak ditemukan")
