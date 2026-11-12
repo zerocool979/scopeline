@@ -13,15 +13,16 @@ depends_on = None
 
 
 def upgrade() -> None:
-    with op.batch_alter_table("engagements") as batch:
-        batch.add_column(sa.Column("roe_project_manager_approved_by_id", sa.Integer(), nullable=True))
-        batch.add_column(sa.Column("roe_project_manager_approved_at", sa.DateTime(), nullable=True))
-        batch.add_column(sa.Column("roe_head_approved_by_id", sa.Integer(), nullable=True))
-        batch.add_column(sa.Column("roe_head_approved_at", sa.DateTime(), nullable=True))
-        batch.create_foreign_key("fk_engagements_roe_pm_approver", "users",
-                                 ["roe_project_manager_approved_by_id"], ["id"])
-        batch.create_foreign_key("fk_engagements_roe_head_approver", "users",
-                                 ["roe_head_approved_by_id"], ["id"])
+    op.add_column("engagements", sa.Column(
+        "roe_project_manager_approved_by_id", sa.Integer(),
+        sa.ForeignKey("users.id"), nullable=True))
+    op.add_column("engagements", sa.Column(
+        "roe_project_manager_approved_at", sa.DateTime(), nullable=True))
+    op.add_column("engagements", sa.Column(
+        "roe_head_approved_by_id", sa.Integer(),
+        sa.ForeignKey("users.id"), nullable=True))
+    op.add_column("engagements", sa.Column(
+        "roe_head_approved_at", sa.DateTime(), nullable=True))
     # Approval v1 tidak membuktikan persetujuan kedua pejabat; minta persetujuan ulang.
     op.execute(sa.text(
         "UPDATE engagements SET roe_approved = FALSE, roe_approved_by_id = NULL, roe_approved_at = NULL"
