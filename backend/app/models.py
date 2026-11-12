@@ -66,6 +66,10 @@ class Engagement(Base):
     roe_approved = Column(Boolean, default=False, nullable=False)
     roe_approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     roe_approved_at = Column(DateTime, nullable=True)
+    roe_project_manager_approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    roe_project_manager_approved_at = Column(DateTime, nullable=True)
+    roe_head_approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    roe_head_approved_at = Column(DateTime, nullable=True)
     status = Column(String(16), default="draft", nullable=False)
     created_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=utcnow, nullable=False)
@@ -207,6 +211,19 @@ class NoteVersion(Base):
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
     editor = relationship("User", foreign_keys=[edited_by_id])
+
+
+class ReportApproval(Base):
+    """Persetujuan laporan oleh Project Manager (lead) dan Engineer-Head (reviewer)."""
+    __tablename__ = "report_approvals"
+    __table_args__ = (UniqueConstraint("engagement_id", "kind", "approver_role"),)
+    id = Column(Integer, primary_key=True)
+    engagement_id = Column(Integer, ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True)
+    kind = Column(String(16), nullable=False)
+    approver_role = Column(String(16), nullable=False)
+    approved_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    fingerprint = Column(String(64), nullable=False)
+    approved_at = Column(DateTime, default=utcnow, nullable=False)
 
 
 class ReportTemplate(Base):
