@@ -216,7 +216,7 @@ class NoteVersion(Base):
 class ReportApproval(Base):
     """Persetujuan laporan oleh Project Manager (lead) dan Engineer-Head (reviewer)."""
     __tablename__ = "report_approvals"
-    __table_args__ = (UniqueConstraint("engagement_id", "kind", "approver_role"),)
+    __table_args__ = (UniqueConstraint("engagement_id", "kind", "approver_role", name="uq_report_approval_role"),)
     id = Column(Integer, primary_key=True)
     engagement_id = Column(Integer, ForeignKey("engagements.id", ondelete="CASCADE"), nullable=False, index=True)
     kind = Column(String(16), nullable=False)
