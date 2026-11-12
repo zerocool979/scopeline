@@ -26,7 +26,11 @@ def eng_out(e: Engagement) -> dict:
         "start_date": e.start_date, "end_date": e.end_date, "roe_text": e.roe_text,
         "roe_approved": e.roe_approved,
         "roe_approved_by": e.roe_approved_by.username if e.roe_approved_by else None,
-        "roe_approved_at": e.roe_approved_at,\n        "roe_approvals": {\n            "project_manager": {"approved": bool(e.roe_project_manager_approved_by_id), "approved_at": e.roe_project_manager_approved_at},\n            "engineer_head_offensive_security": {"approved": bool(e.roe_head_approved_by_id), "approved_at": e.roe_head_approved_at},\n        }, "status": e.status,
+        "roe_approved_at": e.roe_approved_at,
+        "roe_approvals": {
+            "project_manager": {"approved": bool(e.roe_project_manager_approved_by_id), "approved_at": e.roe_project_manager_approved_at},
+            "engineer_head_offensive_security": {"approved": bool(e.roe_head_approved_by_id), "approved_at": e.roe_head_approved_at},
+        }, "status": e.status,
         "in_window": e.start_date <= today <= e.end_date,
         "members": [{"id": m.id, "username": m.username, "full_name": m.full_name} for m in e.members],
         "finding_count": len(e.findings),
