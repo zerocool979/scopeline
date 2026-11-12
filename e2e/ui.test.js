@@ -128,7 +128,6 @@ async function step(name, fn) {
     head.go(ctx.engHash); await head.see('Persetujuan Project Manager: Disetujui');
     await head.click('Setujui RoE');
     await head.seeToast('Persetujuan RoE dicatat');
-    head.close();
     s.go('#/'); await s.see('Dasbor'); s.go(ctx.engHash);
     await waitFor(() => !s.button('Mulai pengujian').disabled, 'kedua persetujuan tercatat');
     await s.click('Mulai pengujian'); await waitFor(() => s.q('h1 + div .badge.active, .between .badge.active'), 'status aktif');
