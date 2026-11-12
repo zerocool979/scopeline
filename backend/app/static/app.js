@@ -2,7 +2,7 @@
 const SEV = {critical: 'Kritis', high: 'Tinggi', medium: 'Sedang', low: 'Rendah', none: 'Info'};
 const FSTAT = {open: 'Terbuka', fixed: 'Diperbaiki', retest_passed: 'Lulus retest'};
 const ESTAT = {draft: 'Draf', active: 'Aktif', completed: 'Selesai'};
-const ROLE = {admin: 'Admin', lead: 'Lead', tester: 'Penguji', reviewer: 'Peninjau', writer: 'Technical Writer'};
+const ROLE = {admin: 'Admin', lead: 'Project Manager', tester: 'Engineer-Red Team', reviewer: 'Engineer-Head Offensive Security', writer: 'Engineer-Lead Technical Writer'};
 const CVSS_METRICS = [
   ['AV', 'Attack Vector', {N: 'Network', A: 'Adjacent', L: 'Local', P: 'Physical'}],
   ['AC', 'Attack Complexity', {L: 'Low', H: 'High'}],
@@ -185,11 +185,12 @@ async function viewEngagement(id) {
       })}, 'Simpan'))),
     h('div', {class: 'card'}, h('div', {class: 'between'}, h('h2', {}, 'Rules of Engagement (RoE)'),
       h('span', {class: 'badge ' + (e.roe_approved ? 'ok' : 'warn')}, e.roe_approved ? `Disetujui oleh ${e.roe_approved_by}` : 'Belum disetujui')),
-      roe, isStaff() && h('div', {class: 'actions'},
-        h('button', {class: 'sec', onclick: act(async () => { await api('/engagements/' + id, {method: 'PATCH', body: {roe_text: roe.value}}); toast('RoE disimpan (persetujuan direset bila berubah)'); reload(); })}, 'Simpan RoE'),
-        h('button', {disabled: e.roe_approved, onclick: act(async () => { await api(`/engagements/${id}/roe/approve`, {method: 'POST'}); toast('RoE disetujui'); reload(); })}, 'Setujui RoE'),
-        statusBtns),
-      h('p', {class: 'muted'}, 'Pengujian hanya dapat dimulai setelah RoE disetujui. Mengubah ruang lingkup/RoE membatalkan persetujuan.')),
+      roe, h('p', {class: 'muted'}, `Persetujuan Project Manager: ${e.roe_approvals?.project_manager?.approved ? 'Disetujui' : 'Menunggu'} · Engineer-Head Offensive Security: ${e.roe_approvals?.engineer_head_offensive_security?.approved ? 'Disetujui' : 'Menunggu'}`),
+      ['lead', 'reviewer'].includes(state.user.role) && h('div', {class: 'actions'},
+        isStaff() && h('button', {class: 'sec', onclick: act(async () => { await api('/engagements/' + id, {method: 'PATCH', body: {roe_text: roe.value}}); toast('RoE disimpan (persetujuan direset bila berubah)'); reload(); })}, 'Simpan RoE'),
+        h('button', {disabled: state.user.role === 'lead' ? e.roe_approvals?.project_manager?.approved : e.roe_approvals?.engineer_head_offensive_security?.approved, onclick: act(async () => { await api(`/engagements/${id}/roe/approve`, {method: 'POST'}); toast('Persetujuan RoE dicatat'); reload(); })}, 'Setujui RoE'),
+        isStaff() ? statusBtns : null),
+      h('p', {class: 'muted'}, 'Engagement hanya dapat diaktifkan setelah Project Manager dan Engineer-Head Offensive Security menyetujui RoE. Perubahan scope/RoE membatalkan kedua persetujuan.')),
     isStaff() && h('div', {class: 'card'}, h('h2', {}, 'Anggota tim'), h('div', {class: 'row'}, checks),
       h('div', {class: 'actions'}, h('button', {class: 'sec', onclick: act(async (ev) => {
         const ids = [...ev.currentTarget.closest('.card').querySelectorAll('input[type=checkbox]')].filter(c => c.checked).map(c => +c.dataset.id);
