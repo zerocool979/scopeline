@@ -166,6 +166,7 @@ def test_evidence_upload_rules(client, tokens, eng):
     assert d.status_code == 200 and d.content == PNG
     assert d.headers["content-disposition"].startswith("attachment")
     assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["tester2"]).status_code == 404
+    assert client.get(f"/api/evidence/{ev['id']}/download", headers=tokens["admin"]).status_code == 403
     assert client.delete(f"/api/evidence/{ev['id']}", headers=t).status_code == 204
 
 
