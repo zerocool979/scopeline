@@ -68,7 +68,7 @@ def finding_out(f: Finding, with_evidence: bool = True, blobs: bool = False) -> 
 
 
 def _out(f: Finding, user: User) -> dict:
-    return finding_out(f, with_evidence=user.role != "writer")
+    return finding_out(f, with_evidence=user.role not in ("writer", "admin"))
 
 
 def _score(vector: str) -> tuple[float, str]:
@@ -344,8 +344,8 @@ def _load_evidence(db: Session, user: User, evid: int) -> tuple[Evidence, Findin
 
 @router.get("/evidence/{evid}/download")
 def download_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(current_user)):
-    if user.role == "writer":
-        raise HTTPException(403, "Technical Writer tidak memiliki akses ke bukti mentah")
+    if user.role in ("writer", "admin"):
+        raise HTTPException(403, "Role ini tidak memiliki akses ke bukti mentah")
     ev, _, _ = _load_evidence(db, user, evid)
     path = settings.evidence_dir / ev.stored_name
     if ev.data is not None:
