@@ -48,9 +48,13 @@ def _report_fingerprint(e, kind: str, tpl) -> str:
             "impact": f.impact, "recommendation": f.recommendation, "cvss_vector": f.cvss_vector,
             "cvss_version": f.cvss_version, "cvss_score": f.cvss_score, "severity": f.severity,
             "status": f.status, "review_status": f.review_status, "review_note": f.review_note,
+            "due_date": f.due_date.isoformat() if f.due_date else None,
+            "cvss_legacy_vector": f.cvss_legacy_vector, "cvss_legacy_score": f.cvss_legacy_score,
+            "cvss_legacy_severity": f.cvss_legacy_severity, "cvss_legacy_version": f.cvss_legacy_version,
             "retests": [{"round_no": rt.round_no, "result": rt.result,
                          "tested_at": rt.tested_at.isoformat(), "notes": rt.notes,
-                         "evidence": [{"filename": ev.filename, "size": ev.size} for ev in rt.evidence]}
+                         "evidence": [{"id": ev.id, "filename": ev.filename, "size": ev.size,
+                                         "uploaded_at": ev.uploaded_at.isoformat()} for ev in rt.evidence]}
                         for rt in f.retests],
             "evidence": [{"filename": ev.filename, "size": ev.size}
                          for ev in f.evidence if ev.retest_id is None],
