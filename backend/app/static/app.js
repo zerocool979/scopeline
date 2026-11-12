@@ -74,7 +74,7 @@ const act = fn => async (ev) => {
 };
 const sevBadge = s => h('span', {class: 'badge ' + s}, SEV[s] || s);
 const fmtDate = d => d ? String(d).slice(0, 10) : '-';
-const isStaff = () => ['admin', 'lead'].includes(state.user.role);
+const isStaff = () => state.user.role === 'lead';
 const canWrite = () => ['admin', 'lead', 'tester'].includes(state.user.role);
 const field = (label, input) => h('div', {}, h('label', {}, label), input);
 const opts = (map, sel) => Object.entries(map).map(([k, v]) => h('option', {value: k, selected: k === sel}, v));
@@ -86,7 +86,7 @@ function layout(active, ...content) {
   return [
     h('nav', {}, h('span', {class: 'logo'}, 'SCOPE', h('b', {}, 'LINE')),
       link('', 'Dasbor', 'dash'), link('engagements', 'Engagement', 'eng'),
-      ['admin', 'lead', 'writer'].includes(state.user.role) && link('templates', 'Templat', 'tpl'), isStaff() && link('audit', 'Log Audit', 'audit'),
+      ['admin', 'lead', 'writer'].includes(state.user.role) && link('templates', 'Templat', 'tpl'), ['admin', 'lead'].includes(state.user.role) && link('audit', 'Log Audit', 'audit'),
       state.user.role === 'admin' && link('users', 'Pengguna', 'users'),
       h('span', {class: 'sp'}), h('span', {class: 'who'}, `${state.user.full_name} (${ROLE[state.user.role]})`),
       link('account', 'Akun', 'acc'), h('a', {href: '#', onclick: e => { e.preventDefault(); logout(); }}, 'Keluar')),
