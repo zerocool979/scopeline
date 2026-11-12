@@ -42,7 +42,7 @@ Dokumen PA dan PM di atas adalah dokumen kerja berbasis Markdown di repository. 
 
 ### Role
 
-Admin, Lead, Penguji (tester), Peninjau (reviewer), dan Technical Writer (writer). Technical Writer hanya dapat menyunting narasi temuan dan template laporan; tidak dapat mengakses bukti mentah atau mengubah CVSS/status teknis.
+Admin, Lead, Penguji (tester), Peninjau (reviewer), dan Technical Writer (writer). Project Manager (`lead`) dan Engineer-Head Offensive Security (`reviewer`) wajib menyetujui RoE dan laporan final. Admin tidak memiliki akses ke raw evidence. Engineer-Lead Technical Writer (`writer`) tidak dapat mengakses raw evidence atau mengubah CVSS/status teknis.
 
 ## Stack dan data
 
