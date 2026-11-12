@@ -263,7 +263,7 @@ def add_retest(fid: int, data: RetestIn, db: Session = Depends(get_db),
 
 @router.post("/retests/{rid}/evidence", status_code=201)
 def upload_retest_evidence(rid: int, file: UploadFile = File(...), db: Session = Depends(get_db),
-                           user: User = Depends(require_roles(*WRITERS))):
+                           user: User = Depends(require_roles("lead", "tester"))):
     r = db.get(Retest, rid)
     if not r:
         raise HTTPException(404, "Ronde retest tidak ditemukan")
@@ -326,7 +326,7 @@ def _store_evidence(db: Session, user: User, f: Finding, file: UploadFile, retes
 
 @router.post("/findings/{fid}/evidence", status_code=201)
 def upload_evidence(fid: int, file: UploadFile = File(...), db: Session = Depends(get_db),
-                    user: User = Depends(require_roles(*WRITERS))):
+                    user: User = Depends(require_roles("lead", "tester"))):
     f, e = _load_finding(db, user, fid)
     _ensure_active(e)
     _store_evidence(db, user, f, file)
@@ -359,7 +359,7 @@ def download_evidence(evid: int, db: Session = Depends(get_db), user: User = Dep
 
 
 @router.delete("/evidence/{evid}", status_code=204)
-def delete_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(require_roles(*WRITERS))):
+def delete_evidence(evid: int, db: Session = Depends(get_db), user: User = Depends(require_roles("lead", "tester"))):
     ev, f, e = _load_evidence(db, user, evid)
     _ensure_active(e)
     (settings.evidence_dir / ev.stored_name).unlink(missing_ok=True)
