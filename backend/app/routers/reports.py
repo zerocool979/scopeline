@@ -123,7 +123,10 @@ def export_report(eid: int, format: str = Query("docx", pattern="^(docx|pdf)$"),
         roles = {a.approver_role for a in db.query(ReportApproval).filter_by(
             engagement_id=e.id, kind=kind, fingerprint=fingerprint).all()}
         if not {"lead", "reviewer"}.issubset(roles):
-            raise HTTPException(409, "Laporan final memerlukan persetujuan Project Manager dan Engineer-Head Offensive Security untuk versi data saat ini")
+            raise HTTPException(
+                409,
+                "Laporan final memerlukan persetujuan Project Manager dan Engineer-Head Offensive Security untuk versi data saat ini",
+            )
     with_ev = user.role not in ("writer", "admin")  # Admin dan Technical Writer tidak mendapat raw evidence
     findings = [finding_out(f, with_evidence=with_ev, blobs=True) for f in chosen]
     draft = any(f["review_status"] != "approved" for f in findings)
