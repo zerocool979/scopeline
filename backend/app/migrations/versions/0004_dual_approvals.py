@@ -24,7 +24,7 @@ def upgrade() -> None:
                                  ["roe_head_approved_by_id"], ["id"])
     # Approval v1 tidak membuktikan persetujuan kedua pejabat; minta persetujuan ulang.
     op.execute(sa.text(
-        "UPDATE engagements SET roe_approved = 0, roe_approved_by_id = NULL, roe_approved_at = NULL"
+        "UPDATE engagements SET roe_approved = FALSE, roe_approved_by_id = NULL, roe_approved_at = NULL"
     ))
     op.create_table(
         "report_approvals",
