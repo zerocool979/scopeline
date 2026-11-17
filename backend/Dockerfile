@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.15-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 DATA_DIR=/data HOME=/home/app
 # LibreOffice (headless) dipakai untuk konversi DOCX -> PDF
 RUN apt-get update && apt-get install -y --no-install-recommends libreoffice-writer fonts-dejavu-core fonts-liberation \
